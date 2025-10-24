@@ -24,7 +24,7 @@ local Window = Rayfield:CreateWindow({
       FileName = "皮空密钥",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"皮空脚本垃圾", "皮炎是司空的爸爸"}
+      Key = {"皮空脚本垃圾", "皮炎是司空的爸爸"，"皮空脚本牛逼＂}
    }
 })
 
@@ -44,7 +44,7 @@ local MainSection = MainTab:CreateSection("皮空重制版")
 MainTab:CreateLabel("欢迎使用皮空重制版脚本！")
 MainTab:CreateLabel("所有功能已解锁，请尽情使用！")
 MainTab:CreateLabel("作者: 皮炎，司空")
-MainTab:CreateLabel("联系方式: 快手1466456286")
+MainTab:CreateLabel("皮炎快手1466456286 司空快手smalldesikon")
 
 local InfoSection = MainTab:CreateSection("系统信息")
 
@@ -206,7 +206,7 @@ CoreTab:CreateToggle({
 local ESPEnabled = false
 local PlayersAdded
 CoreTab:CreateToggle({
-   Name = "绘制天线",
+   Name = "esp",
    CurrentValue = false,
    Flag = "ESPToggle",
    Callback = function(Value)
@@ -575,7 +575,7 @@ OtherTab:CreateButton({
         
         Rayfield:Notify({
             Title = "注入器信息",
-            Content = "注入器: " .. injectorName .. "\n作者: 皮炎\n联系方式: 快手1466456286\n状态: 运行中",
+            Content = "注入器: " .. injectorName .. "\n作者: 皮炎，司空\n皮炎快手1466456286司空快手smalldesikonn\状态: 运行中",
             Duration = 8,
             Image = 4483362458,
         })
