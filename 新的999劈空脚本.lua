@@ -1,813 +1,1245 @@
--- 使用一个更稳定的 UI 库
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- 加载动画
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local ContentProvider = game:GetService("ContentProvider")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- 创建窗口
-local Window = Rayfield:CreateWindow({
-   Name = "司空我昌龄吗还不更新我直能做重制版了",
-   LoadingTitle = "皮空重制版",
-   LoadingSubtitle = "正在加载...",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "皮空脚本",
-      FileName = "配置"
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "noinvitelink",
-      RememberJoins = true
-   },
-   KeySystem = true,
-   KeySettings = {
-      Title = "皮空验证系统",
-      Subtitle = "请输入卡密",
-      Note = "加Q:1046855905 获取卡密",
-      FileName = "皮空密钥",
-      SaveKey = true,
-      GrabKeyFromSite = false,
-      Key = {"皮空脚本垃圾", "皮炎是司空的爸爸"，"皮空脚本牛逼＂}
-   }
-})
-
--- 等待验证通过
-Rayfield:LoadConfiguration()
-
--- 创建标签页
-local MainTab = Window:CreateTab("主界面", 4483362458)
-local CoreTab = Window:CreateTab("核心功能", 4483362458)
-local TranslateTab = Window:CreateTab("极速汉化", 4483362458)
-local V99Tab = Window:CreateTab("99页", 4483362458)
-local InkGameTab = Window:CreateTab("墨水游戏", 4483362458)
-local OtherTab = Window:CreateTab("其他功能", 4483362458)
-
--- ========== 主界面内容 ==========
-local MainSection = MainTab:CreateSection("皮空重制版")
-MainTab:CreateLabel("欢迎使用皮空重制版脚本！")
-MainTab:CreateLabel("所有功能已解锁，请尽情使用！")
-MainTab:CreateLabel("作者: 皮炎，司空")
-MainTab:CreateLabel("皮炎快手1466456286 司空快手smalldesikon")
-
-local InfoSection = MainTab:CreateSection("系统信息")
-
-if identifyexecutor then
-    MainTab:CreateLabel("你的注入器: " .. identifyexecutor())
-else
-    MainTab:CreateLabel("你的注入器: 未知")
-end
-
-local FPSLabel = MainTab:CreateLabel("帧率: 计算中...")
-
-local player = game.Players.LocalPlayer
-MainTab:CreateLabel("用户名: " .. player.Name)
-MainTab:CreateLabel("显示名: " .. player.DisplayName)
-MainTab:CreateLabel("用户ID: " .. player.UserId)
-MainTab:CreateLabel("账号年龄: " .. player.AccountAge .. " 天")
-
-spawn(function()
-    local RunService = game:GetService("RunService")
-    local counter = 0
-    local lastTime = tick()
-    
-    while true do
-        counter = counter + 1
-        if tick() - lastTime >= 1 then
-            FPSLabel:SetText("帧率: " .. counter .. " FPS")
-            counter = 0
-            lastTime = tick()
-        end
-        RunService.RenderStepped:Wait()
-    end
-end)
-
--- ========== 核心功能 ==========
-local CoreSection = CoreTab:CreateSection("核心功能")
-
-local NoclipConnection
-CoreTab:CreateToggle({
-   Name = "穿墙模式",
-   CurrentValue = false,
-   Flag = "NoclipToggle",
-   Callback = function(Value)
-      if Value then
-         NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
-            if game.Players.LocalPlayer.Character then
-               for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                  if part:IsA("BasePart") and part.CanCollide then
-                     part.CanCollide = false
-                  end
-               end
-            end
-         end)
-      else
-         if NoclipConnection then
-            NoclipConnection:Disconnect()
-            NoclipConnection = nil
-         end
-      end
-   end,
-})
-
-local InfiniteJumpConnection
-CoreTab:CreateToggle({
-   Name = "无限跳跃",
-   CurrentValue = false,
-   Flag = "InfiniteJumpToggle",
-   Callback = function(Value)
-      if Value then
-         InfiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-            if game.Players.LocalPlayer.Character then
-               game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-            end
-         end)
-      else
-         if InfiniteJumpConnection then
-            InfiniteJumpConnection:Disconnect()
-            InfiniteJumpConnection = nil
-         end
-      end
-   end,
-})
-
-CoreTab:CreateButton({
-   Name = "飞行模式",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-   end,
-})
-
-local AimlockEnabled = false
-CoreTab:CreateToggle({
-   Name = "自瞄锁定",
-   CurrentValue = false,
-   Flag = "AimlockToggle",
-   Callback = function(Value)
-      AimlockEnabled = Value
-      if Value then
-         spawn(function()
-            while AimlockEnabled do
-               task.wait()
-               pcall(function()
-                  local closestPlayer = getClosestPlayer()
-                  if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                     game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.Position,
-                        Vector3.new(
-                           closestPlayer.Character.HumanoidRootPart.Position.X,
-                           game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Y,
-                           closestPlayer.Character.HumanoidRootPart.Position.Z
-                        )
-                     )
-                  end
-               end)
-            end
-         end)
-      end
-   end,
-})
-
-local WalkOnAirEnabled = false
-CoreTab:CreateToggle({
-   Name = "踏空行走",
-   CurrentValue = false,
-   Flag = "WalkOnAirToggle",
-   Callback = function(Value)
-      WalkOnAirEnabled = Value
-      if Value then
-         local platform = Instance.new("Part")
-         platform.Name = "AirPlatform"
-         platform.Anchored = true
-         platform.CanCollide = true
-         platform.Size = Vector3.new(10, 1, 10)
-         platform.Transparency = 0.7
-         platform.BrickColor = BrickColor.new("Bright blue")
-         platform.Parent = workspace
-         
-         spawn(function()
-            while WalkOnAirEnabled do
-               task.wait()
-               pcall(function()
-                  local character = game.Players.LocalPlayer.Character
-                  if character and character:FindFirstChild("HumanoidRootPart") then
-                     local pos = character.HumanoidRootPart.Position
-                     platform.Position = Vector3.new(pos.X, pos.Y - 4, pos.Z)
-                  end
-               end)
-            end
-            platform:Destroy()
-         end)
-      else
-         local platform = workspace:FindFirstChild("AirPlatform")
-         if platform then
-            platform:Destroy()
-         end
-      end
-   end,
-})
-
-local ESPEnabled = false
-local PlayersAdded
-CoreTab:CreateToggle({
-   Name = "esp",
-   CurrentValue = false,
-   Flag = "ESPToggle",
-   Callback = function(Value)
-      ESPEnabled = Value
-      if Value then
-         for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-               createESP(player)
-            end
-         end
-         
-         PlayersAdded = game.Players.PlayerAdded:Connect(function(player)
-            if ESPEnabled then
-               createESP(player)
-            end
-         end)
-      else
-         for _, player in pairs(game.Players:GetPlayers()) do
-            removeESP(player)
-         end
-         
-         if PlayersAdded then
-            PlayersAdded:Disconnect()
-            PlayersAdded = nil
-         end
-      end
-   end,
-})
-
-local SpeedValue = 16
-CoreTab:CreateSlider({
-   Name = "移动速度",
-   Range = {16, 100},
-   Increment = 1,
-   Suffix = "速度",
-   CurrentValue = 16,
-   Flag = "SpeedSlider",
-   Callback = function(Value)
-      SpeedValue = Value
-      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-      end
-   end,
-})
-
-local JumpValue = 50
-CoreTab:CreateSlider({
-   Name = "跳跃高度",
-   Range = {50, 200},
-   Increment = 1,
-   Suffix = "高度",
-   CurrentValue = 50,
-   Flag = "JumpSlider",
-   Callback = function(Value)
-      JumpValue = Value
-      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-         game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-      end
-   end,
-})
-
--- ========== 极速汉化标签页 ==========
-local TranslateSection = TranslateTab:CreateSection("极速汉化设置")
-
-local TranslateEngine = {
-    isRunning = false,
-    cache = {},
-    textData = {}
+local CONFIG = {
+    LOAD_TIME = 5,
+    PRIMARY_COLOR = Color3.fromRGB(100, 180, 255),
+    SECONDARY_COLOR = Color3.fromRGB(180, 100, 255),
+    GLOW_INTENSITY = 0.85,
+    LOGO_IMAGE = "rbxassetid://6954167216",
+    LOGO_TEXT = "作者：皮炎 司空",
+    BORDER_COLOR = Color3.fromRGB(255, 255, 255),
+    BORDER_THICKNESS = 2,
+    TEXT_BG_COLOR = Color3.fromRGB(30, 30, 50),
+    TEXT_BG_TRANSPARENCY = 0.7,
+    SHADOW_COLOR = Color3.fromRGB(0, 0, 50),
+    SHADOW_TRANSPARENCY = 0.7,
+    MAIN_BG_COLOR = Color3.fromRGB(15, 15, 25),
+    MAIN_BG_TRANSPARENCY = 0.15,
+    MAIN_BORDER_COLOR = Color3.fromRGB(200, 200, 255),
+    MAIN_BORDER_THICKNESS = 4,
+    GLOW_COLOR = Color3.fromRGB(100, 150, 255),
+    PULSE_SPEED = 3,
+    PARTICLE_COUNT = 20,
+    LOGO_SCALE = 0.8,
+    LOGO_PADDING = 0.05,
+    BG_PARTICLE_COUNT = 8
 }
 
-local function translateText(text)
-    if not text or text == "" then return "" end
-    
-    if TranslateEngine.cache[text] then
-        return TranslateEngine.cache[text]
+ContentProvider:PreloadAsync({
+    CONFIG.LOGO_IMAGE,
+    "rbxassetid://5028857084"
+})
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "WhiteBorderLoadingScreen"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local mainContainer = Instance.new("Frame")
+mainContainer.Name = "MainContainer"
+mainContainer.Size = UDim2.new(0.75, 0, 0.65, 0)
+mainContainer.Position = UDim2.new(0.125, 0, 0.175, 0)
+mainContainer.BackgroundTransparency = 1
+mainContainer.ZIndex = 10
+mainContainer.Parent = screenGui
+
+local mainBackground = Instance.new("Frame")
+mainBackground.Name = "MainBackground"
+mainBackground.Size = UDim2.new(1, 0, 1, 0)
+mainBackground.BackgroundColor3 = CONFIG.MAIN_BG_COLOR
+mainBackground.BackgroundTransparency = 1
+mainBackground.ZIndex = 1
+mainBackground.Parent = mainContainer
+
+local mainBgCorner = Instance.new("UICorner")
+mainBgCorner.CornerRadius = UDim.new(0.05, 0)
+mainBgCorner.Parent = mainBackground
+
+local mainBorder = Instance.new("Frame")
+mainBorder.Name = "MainBorder"
+mainBorder.Size = UDim2.new(1, 0, 1, 0)
+mainBorder.BackgroundTransparency = 1
+mainBorder.ZIndex = 2
+mainBorder.Parent = mainContainer
+
+local mainBorderStroke = Instance.new("UIStroke")
+mainBorderStroke.Color = CONFIG.MAIN_BORDER_COLOR
+mainBorderStroke.Thickness = 0
+mainBorderStroke.Transparency = 0
+mainBorderStroke.Parent = mainBorder
+
+local mainBorderCorner = Instance.new("UICorner")
+mainBorderCorner.CornerRadius = UDim.new(0.05, 0)
+mainBorderCorner.Parent = mainBorder
+
+local mainBorderGlow = Instance.new("UIStroke")
+mainBorderGlow.Color = CONFIG.GLOW_COLOR
+mainBorderGlow.Thickness = 0
+mainBorderGlow.Transparency = 0.5
+mainBorderGlow.Parent = mainBorder
+
+local innerGlowEffect = Instance.new("ImageLabel")
+innerGlowEffect.Name = "InnerGlowEffect"
+innerGlowEffect.Size = UDim2.new(1.05, 0, 1.05, 0)
+innerGlowEffect.Position = UDim2.new(0.5, 0, 0.5, 0)
+innerGlowEffect.AnchorPoint = Vector2.new(0.5, 0.5)
+innerGlowEffect.BackgroundTransparency = 1
+innerGlowEffect.Image = "rbxassetid://5028857084"
+innerGlowEffect.ImageColor3 = CONFIG.GLOW_COLOR
+innerGlowEffect.ScaleType = Enum.ScaleType.Slice
+innerGlowEffect.SliceCenter = Rect.new(100, 100, 100, 100)
+innerGlowEffect.ImageTransparency = 1
+innerGlowEffect.ZIndex = 0
+innerGlowEffect.Parent = mainBorder
+
+local particles = Instance.new("Frame")
+particles.Name = "Particles"
+particles.Size = UDim2.new(1, 0, 1, 0)
+particles.BackgroundTransparency = 1
+particles.ZIndex = 3
+particles.Parent = mainBorder
+
+local bgParticles = Instance.new("Frame")
+bgParticles.Name = "BackgroundParticles"
+bgParticles.Size = UDim2.new(1, 0, 1, 0)
+bgParticles.BackgroundTransparency = 1
+bgParticles.ZIndex = 0
+bgParticles.Parent = mainBackground
+
+local leftPanel = Instance.new("Frame")
+leftPanel.Name = "LeftPanel"
+leftPanel.Size = UDim2.new(0.35, 0, 0.9, 0)
+leftPanel.Position = UDim2.new(0.05, 0, 0.05, 0)
+leftPanel.BackgroundTransparency = 1
+leftPanel.ZIndex = 11
+leftPanel.Parent = mainContainer
+
+local logoText = Instance.new("TextLabel")
+logoText.Name = "LogoText"
+logoText.Size = UDim2.new(1, 0, 0.15, 0)
+logoText.Position = UDim2.new(0.5, 0, 0, 0)
+logoText.AnchorPoint = Vector2.new(0.5, 0)
+logoText.BackgroundTransparency = 1
+logoText.Text = CONFIG.LOGO_TEXT
+logoText.TextColor3 = Color3.fromRGB(80, 0, 0)
+logoText.TextSize = 36
+logoText.Font = Enum.Font.GothamBlack
+logoText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+logoText.TextStrokeTransparency = 0.5
+logoText.TextTransparency = 1
+logoText.ZIndex = 12
+logoText.Parent = leftPanel
+
+local logoContainer = Instance.new("Frame")
+logoContainer.Name = "LogoContainer"
+logoContainer.Size = UDim2.new(0.9, 0, 0.7, 0)
+logoContainer.Position = UDim2.new(0.5, 0, 0.2, 0)
+logoContainer.AnchorPoint = Vector2.new(0.5, 0)
+logoContainer.BackgroundTransparency = 1
+logoContainer.ZIndex = 11
+logoContainer.Parent = leftPanel
+
+local logoImage = Instance.new("ImageLabel")
+logoImage.Name = "LogoImage"
+logoImage.Size = UDim2.new(1, 0, 1, 0)
+logoImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+logoImage.AnchorPoint = Vector2.new(0.5, 0.5)
+logoImage.BackgroundTransparency = 1
+logoImage.Image = CONFIG.LOGO_IMAGE
+logoImage.ScaleType = Enum.ScaleType.Fit
+logoImage.ZIndex = 13
+logoImage.Parent = logoContainer
+
+local frameBorder = Instance.new("UIStroke")
+frameBorder.Color = CONFIG.BORDER_COLOR
+frameBorder.Thickness = CONFIG.BORDER_THICKNESS
+frameBorder.Transparency = 1
+frameBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+frameBorder.Parent = logoImage
+
+local borderGlow = Instance.new("UIStroke")
+borderGlow.Color = CONFIG.PRIMARY_COLOR
+borderGlow.Thickness = CONFIG.BORDER_THICKNESS * 1.5
+borderGlow.Transparency = 1
+borderGlow.Parent = logoImage
+
+local innerGlow = Instance.new("ImageLabel")
+innerGlow.Name = "InnerGlow"
+innerGlow.Size = UDim2.new(1.1, 0, 1.1, 0)
+innerGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+innerGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+innerGlow.BackgroundTransparency = 1
+innerGlow.Image = "rbxassetid://5028857084"
+innerGlow.ImageColor3 = CONFIG.PRIMARY_COLOR
+innerGlow.ScaleType = Enum.ScaleType.Slice
+innerGlow.SliceCenter = Rect.new(100, 100, 100, 100)
+innerGlow.ImageTransparency = 1
+innerGlow.ZIndex = 11
+innerGlow.Parent = logoContainer
+
+local rightPanel = Instance.new("Frame")
+rightPanel.Name = "RightPanel"
+rightPanel.Size = UDim2.new(0.6, 0, 0.9, 0)
+rightPanel.Position = UDim2.new(0.4, 0, 0.05, 0)
+rightPanel.BackgroundTransparency = 1
+rightPanel.ZIndex = 11
+rightPanel.Parent = mainContainer
+
+local welcomeText = Instance.new("TextLabel")
+welcomeText.Name = "WelcomeText"
+welcomeText.Size = UDim2.new(1, 0, 0.2, 0)
+welcomeText.Position = UDim2.new(0.5, 0, 0.1, 0)
+welcomeText.AnchorPoint = Vector2.new(0.5, 0.1)
+welcomeText.BackgroundTransparency = 1
+welcomeText.Text = "欢迎使用皮空"
+welcomeText.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeText.TextSize = 38
+welcomeText.Font = Enum.Font.GothamBlack
+welcomeText.TextXAlignment = Enum.TextXAlignment.Center
+welcomeText.TextTransparency = 1
+welcomeText.ZIndex = 12
+welcomeText.Parent = rightPanel
+
+local usernameText = Instance.new("TextLabel")
+usernameText.Name = "UsernameText"
+usernameText.Size = UDim2.new(1, 0, 0.15, 0)
+usernameText.Position = UDim2.new(0.5, 0, 0.35, 0)
+usernameText.AnchorPoint = Vector2.new(0.5, 0.35)
+usernameText.BackgroundTransparency = 1
+usernameText.Text = "玩家: " .. player.Name
+usernameText.TextColor3 = Color3.fromRGB(255, 255, 255)
+usernameText.TextSize = 28
+usernameText.Font = Enum.Font.GothamSemibold
+usernameText.TextXAlignment = Enum.TextXAlignment.Center
+usernameText.TextTransparency = 1
+usernameText.ZIndex = 12
+usernameText.Parent = rightPanel
+
+local loadingText = Instance.new("TextLabel")
+loadingText.Name = "LoadingText"
+loadingText.Size = UDim2.new(1, 0, 0.1, 0)
+loadingText.Position = UDim2.new(0.5, 0, 0.55, 0)
+loadingText.AnchorPoint = Vector2.new(0.5, 0.55)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = "正在加载资源..."
+loadingText.TextColor3 = Color3.fromRGB(200, 200, 255)
+loadingText.TextSize = 24
+loadingText.Font = Enum.Font.Gotham
+loadingText.TextXAlignment = Enum.TextXAlignment.Center
+loadingText.TextTransparency = 1
+loadingText.ZIndex = 12
+loadingText.Parent = rightPanel
+
+local progressContainer = Instance.new("Frame")
+progressContainer.Name = "ProgressContainer"
+progressContainer.Size = UDim2.new(1, 0, 0.15, 0)
+progressContainer.Position = UDim2.new(0, 0, 0.75, 0)
+progressContainer.BackgroundTransparency = 1
+progressContainer.ZIndex = 11
+progressContainer.Parent = rightPanel
+
+local progressBackground = Instance.new("Frame")
+progressBackground.Name = "ProgressBackground"
+progressBackground.Size = UDim2.new(0.9, 0, 0.4, 0)
+progressBackground.Position = UDim2.new(0.5, 0, 0.3, 0)
+progressBackground.AnchorPoint = Vector2.new(0.5, 0.3)
+progressBackground.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+progressBackground.BorderSizePixel = 0
+progressBackground.ZIndex = 12
+progressBackground.Parent = progressContainer
+
+local progressCorner = Instance.new("UICorner")
+progressCorner.CornerRadius = UDim.new(0.5, 0)
+progressCorner.Parent = progressBackground
+
+local progressBar = Instance.new("Frame")
+progressBar.Name = "ProgressBar"
+progressBar.Size = UDim2.new(0, 0, 1, 0)
+progressBar.BackgroundColor3 = CONFIG.PRIMARY_COLOR
+progressBar.BorderSizePixel = 0
+progressBar.ZIndex = 13
+progressBar.Parent = progressBackground
+
+local barCorner = Instance.new("UICorner")
+barCorner.CornerRadius = UDim.new(0.5, 0)
+barCorner.Parent = progressBar
+
+local gradient = Instance.new("UIGradient")
+gradient.Rotation = 90
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, CONFIG.PRIMARY_COLOR),
+    ColorSequenceKeypoint.new(1, CONFIG.SECONDARY_COLOR)
+})
+gradient.Parent = progressBar
+
+local percentText = Instance.new("TextLabel")
+percentText.Name = "PercentText"
+percentText.Size = UDim2.new(0.9, 0, 0.4, 0)
+percentText.Position = UDim2.new(0.5, 0, 0.7, 0)
+percentText.AnchorPoint = Vector2.new(0.5, 0.7)
+percentText.BackgroundTransparency = 1
+percentText.Text = "0%"
+percentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+percentText.TextSize = 22
+percentText.Font = Enum.Font.GothamSemibold
+percentText.TextXAlignment = Enum.TextXAlignment.Center
+percentText.TextTransparency = 1
+percentText.ZIndex = 12
+percentText.Parent = progressContainer
+
+local function createParticles()
+    for i = 1, CONFIG.PARTICLE_COUNT do
+        local particle = Instance.new("Frame")
+        particle.Name = "Particle_"..i
+        particle.Size = UDim2.new(0.01, 0, 0.01, 0)
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particle.BackgroundColor3 = CONFIG.PRIMARY_COLOR
+        particle.BackgroundTransparency = 0.7
+        particle.ZIndex = 13
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0.5, 0)
+        corner.Parent = particle
+        
+        particle.Parent = particles
     end
+end
+
+local function createBackgroundParticles()
+    for i = 1, CONFIG.BG_PARTICLE_COUNT do
+        local particle = Instance.new("Frame")
+        particle.Name = "BgParticle_"..i
+        particle.Size = UDim2.new(0.02, 0, 0.02, 0)
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particle.BackgroundColor3 = CONFIG.SECONDARY_COLOR
+        particle.BackgroundTransparency = 0.9
+        particle.ZIndex = 0
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0.5, 0)
+        corner.Parent = particle
+        
+        particle.Parent = bgParticles
+        
+        coroutine.wrap(function()
+            local speed = 0.0002 + math.random() * 0.0001
+            while particle and particle.Parent do
+                particle.Position = particle.Position + UDim2.new(speed, 0, speed, 0)
+                if particle.Position.X.Scale > 1.2 then
+                    particle.Position = UDim2.new(-0.2, 0, math.random(), 0)
+                end
+                task.wait(0.1)
+            end
+        end)()
+    end
+end
+
+local function logoFloatAnimation()
+    local startPos = logoContainer.Position
+    local lastUpdate = tick()
     
-    local url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q=" .. game:GetService("HttpService"):UrlEncode(text)
-    
-    local success, result = pcall(function()
-        return game:HttpGet(url)
-    end)
-    
-    if success and result then
-        local decoded = game:GetService("HttpService"):JSONDecode(result)
-        if decoded and decoded[1] then
-            local translated = ""
-            for _, item in ipairs(decoded[1]) do
-                if item[1] then
-                    translated = translated .. item[1]
+    while logoContainer and logoContainer.Parent do
+        local now = tick()
+        if now - lastUpdate >= 0.016 then
+            local time = now
+            local offset = UDim2.new(0, 0, 0, math.sin(time * 2) * 5)
+            logoContainer.Position = startPos + offset
+            
+            local pulse = 0.7 + math.sin(time * 3) * 0.15
+            innerGlow.ImageTransparency = 1 - (pulse * CONFIG.GLOW_INTENSITY)
+            borderGlow.Transparency = 0.7 - (pulse * 0.2)
+            
+            lastUpdate = now
+        end
+        task.wait()
+    end
+end
+
+local function logoPulseAnimation()
+    local lastUpdate = tick()
+    while logoImage and logoImage.Parent do
+        local now = tick()
+        if now - lastUpdate >= 0.05 then
+            local time = now
+            local scale = 1 + math.sin(time * 0.5) * 0.03
+            logoImage.Size = UDim2.new(1 * scale, 0, 1 * scale, 0)
+            lastUpdate = now
+        end
+        task.wait()
+    end
+end
+
+local function borderPulseAnimation()
+    local lastUpdate = tick()
+    while mainBorder and mainBorder.Parent do
+        local now = tick()
+        if now - lastUpdate >= 0.016 then
+            local time = now
+            local pulse = 0.5 + math.sin(time * CONFIG.PULSE_SPEED) * 0.15
+            
+            mainBorderGlow.Thickness = CONFIG.MAIN_BORDER_THICKNESS * (2 + pulse * 0.5)
+            mainBorderGlow.Transparency = 0.5 - (pulse * 0.2)
+            innerGlowEffect.ImageTransparency = 0.8 - (pulse * 0.1)
+            
+            for _, particle in ipairs(particles:GetChildren()) do
+                if particle:IsA("Frame") then
+                    local particleNum = tonumber(string.match(particle.Name, "%d+"))
+                    local offsetX = math.sin(time + particleNum) * 0.01
+                    local offsetY = math.cos(time + particleNum) * 0.01
+                    particle.Position = particle.Position + UDim2.new(offsetX, 0, offsetY, 0)
+                    
+                    if particle.Position.X.Scale < 0 then
+                        particle.Position = UDim2.new(0, 0, particle.Position.Y.Scale, 0)
+                    elseif particle.Position.X.Scale > 1 then
+                        particle.Position = UDim2.new(1, 0, particle.Position.Y.Scale, 0)
+                    end
+                    
+                    if particle.Position.Y.Scale < 0 then
+                        particle.Position = UDim2.new(particle.Position.X.Scale, 0, 0, 0)
+                    elseif particle.Position.Y.Scale > 1 then
+                        particle.Position = UDim2.new(particle.Position.X.Scale, 0, 1, 0)
+                    end
                 end
             end
-            TranslateEngine.cache[text] = translated
-            return translated
+            
+            lastUpdate = now
+        end
+        task.wait()
+    end
+end
+
+local function elementsEntranceAnimation()
+    local tweenInfo = TweenInfo.new(
+        1.2, 
+        Enum.EasingStyle.Quint, 
+        Enum.EasingDirection.Out,
+        0,
+        false,
+        0.2
+    )
+    
+    TweenService:Create(mainBackground, tweenInfo, {BackgroundTransparency = CONFIG.MAIN_BG_TRANSPARENCY}):Play()
+    TweenService:Create(mainBorderStroke, tweenInfo, {Thickness = CONFIG.MAIN_BORDER_THICKNESS}):Play()
+    TweenService:Create(mainBorderGlow, tweenInfo, {Thickness = CONFIG.MAIN_BORDER_THICKNESS * 2.5}):Play()
+    TweenService:Create(innerGlowEffect, tweenInfo, {ImageTransparency = 0.8}):Play()
+    
+    TweenService:Create(frameBorder, tweenInfo, {Transparency = 0}):Play()
+    TweenService:Create(borderGlow, tweenInfo, {Transparency = 0.7}):Play()
+    
+    task.wait(0.3)
+    TweenService:Create(innerGlow, tweenInfo, {ImageTransparency = 0.8}):Play()
+    
+    task.wait(0.2)
+    local textTweenInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    TweenService:Create(logoText, textTweenInfo, {TextTransparency = 0}):Play()
+    task.wait(0.15)
+    TweenService:Create(welcomeText, textTweenInfo, {TextTransparency = 0}):Play()
+    task.wait(0.15)
+    TweenService:Create(usernameText, textTweenInfo, {TextTransparency = 0}):Play()
+    task.wait(0.1)
+    TweenService:Create(loadingText, textTweenInfo, {TextTransparency = 0}):Play()
+    TweenService:Create(percentText, textTweenInfo, {TextTransparency = 0}):Play()
+end
+
+local function rainbowTextAnimation()
+    local hue = 0
+    while usernameText and usernameText.Parent do
+        hue = (hue + 0.008) % 1
+        usernameText.TextColor3 = Color3.fromHSV(hue, 0.7, 1)
+        task.wait(0.08)
+    end
+end
+
+local function loadingAnimation()
+    local startTime = tick()
+    local duration = CONFIG.LOAD_TIME
+    
+    createParticles()
+    createBackgroundParticles()
+    
+    local preloadTime = duration * 0.1
+    while tick() - startTime < preloadTime do
+        local progress = (tick() - startTime) / preloadTime * 0.1
+        progressBar.Size = UDim2.new(progress, 0, 1, 0)
+        percentText.Text = string.format("%d%%", math.floor(progress * 100))
+        task.wait()
+    end
+    
+    local mainLoadTime = duration * 0.8
+    local mainStartTime = tick()
+    while tick() - mainStartTime < mainLoadTime do
+        local progress = 0.1 + (tick() - mainStartTime) / mainLoadTime * 0.8
+        progressBar.Size = UDim2.new(progress, 0, 1, 0)
+        percentText.Text = string.format("%d%%", math.floor(progress * 100))
+        
+        local dots = string.rep(".", math.floor(tick() % 4))
+        loadingText.Text = "正在加载资源" .. dots
+        
+        local hue = 0.5 + progress * 0.3
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromHSV(hue, 0.8, 1)),
+            ColorSequenceKeypoint.new(1, Color3.fromHSV(hue + 0.1, 0.8, 1))
+        })
+        
+        task.wait()
+    end
+    
+    local finishTime = duration * 0.1
+    local finishStartTime = tick()
+    while tick() - finishStartTime < finishTime do
+        local progress = 0.9 + (tick() - finishStartTime) / finishTime * 0.1
+        progressBar.Size = UDim2.new(progress, 0, 1, 0)
+        percentText.Text = string.format("%d%%", math.floor(progress * 100))
+        task.wait()
+    end
+    
+    loadingText.Text = "加载完成!"
+    percentText.Text = "100%"
+    
+    for i = 1, 2 do
+        TweenService:Create(progressBar, TweenInfo.new(0.15), {Size = UDim2.new(1.02, 0, 1.1, 0)}):Play()
+        task.wait(0.15)
+        TweenService:Create(progressBar, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+        task.wait(0.15)
+    end
+    
+    local flash = Instance.new("Frame")
+    flash.Size = UDim2.new(1, 0, 1, 0)
+    flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    flash.BackgroundTransparency = 1
+    flash.ZIndex = 20
+    flash.Parent = mainContainer
+    
+    TweenService:Create(flash, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
+    task.wait(0.3)
+    TweenService:Create(flash, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    
+    local fadeOutInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    
+    for _, text in ipairs({logoText, welcomeText, usernameText, loadingText, percentText}) do
+        TweenService:Create(text, fadeOutInfo, {TextTransparency = 1}):Play()
+    end
+    
+    TweenService:Create(frameBorder, fadeOutInfo, {Transparency = 1}):Play()
+    TweenService:Create(borderGlow, fadeOutInfo, {Transparency = 1}):Play()
+    TweenService:Create(innerGlow, fadeOutInfo, {ImageTransparency = 1}):Play()
+    
+    TweenService:Create(mainBackground, fadeOutInfo, {BackgroundTransparency = 1}):Play()
+    TweenService:Create(mainBorderStroke, fadeOutInfo, {Thickness = 0}):Play()
+    TweenService:Create(mainBorderGlow, fadeOutInfo, {Thickness = 0}):Play()
+    TweenService:Create(innerGlowEffect, fadeOutInfo, {ImageTransparency = 1}):Play()
+    
+    for _, particle in ipairs(particles:GetChildren()) do
+        if particle:IsA("Frame") then
+            TweenService:Create(particle, fadeOutInfo, {BackgroundTransparency = 1}):Play()
         end
     end
     
-    return text
+    task.wait(0.8)
+    screenGui:Destroy()
+    
+    -- 加载动画完成后启动主脚本
+    initMainScript()
 end
 
-local function scanAndTranslate()
-    if not TranslateEngine.isRunning then return end
-    
-    local guis = {
-        game:GetService("CoreGui"),
-        game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+screenGui.Parent = playerGui
+
+coroutine.wrap(logoFloatAnimation)()
+coroutine.wrap(logoPulseAnimation)()
+coroutine.wrap(borderPulseAnimation)()
+coroutine.wrap(elementsEntranceAnimation)()
+coroutine.wrap(rainbowTextAnimation)()
+coroutine.wrap(loadingAnimation)()
+
+-- 主脚本初始化函数
+function initMainScript()
+    -- 加载通知面板
+    local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+    local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+
+    -- 显示加载完成通知
+    Notification:Notify(
+        {Title = "皮空重置", Description = "脚本加载完成！享受使用吧！"},
+        {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+    )
+
+    -- 使用WindUI库替换Rayfield
+    local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+    -- 创建窗口（包含左下角用户显示）
+    local Window = WindUI:CreateWindow({
+        Title = "皮空重置",
+        Icon = "settings",
+        Author = "皮空重置 - 已加载",
+        Folder = "皮空脚本",
+        Size = UDim2.fromOffset(600, 500),
+        Theme = "Dark",
+        User = {
+            Enabled = true,  -- 启用左下角用户显示
+            Anonymous = false, -- 显示真实用户名
+            Callback = function()
+                local player = game.Players.LocalPlayer
+                Notification:Notify(
+                    {Title = "用户信息", Description = string.format("用户名: %s\n显示名: %s\n用户ID: %d", 
+                        player.Name, player.DisplayName, player.UserId)},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 6, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 120, 200)}
+                )
+            end
+        },
+        SideBarWidth = 200,
+        ScrollBarEnabled = true,
+        KeySystem = {
+            Key = { "皮空脚本垃圾", "皮炎是司空的爸爸" },
+            Note = "想获得卡密加Q群1057315887",
+            URL = "1057315887",
+        },
+    })
+
+    -- 添加标签
+    Window:Tag({
+        Title = "重置版",
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    -- 创建各个标签页
+    local Tabs = {
+        Main = Window:Section({ Title = "主界面", Opened = true }),
+        Core = Window:Section({ Title = "核心功能", Opened = true }),
+        Translate = Window:Section({ Title = "极速汉化", Opened = true }),
+        V99 = Window:Section({ Title = "99页", Opened = true }),
+        InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
+        Other = Window:Section({ Title = "其他功能", Opened = true })
     }
-    
-    local translatedCount = 0
-    
-    for _, gui in ipairs(guis) do
-        for _, descendant in ipairs(gui:GetDescendants()) do
-            if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
-                local text = descendant.Text
-                if text and text ~= "" and #text > 2 and #text < 100 then
-                    if text:match("%a") and not text:match("[\228-\233][\128-\191].") then
-                        local translated = translateText(text)
-                        if translated and translated ~= text then
-                            pcall(function()
-                                descendant.Text = translated
-                                translatedCount = translatedCount + 1
-                            end)
+
+    local TabHandles = {
+        Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
+        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
+        Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
+        V99 = Tabs.V99:Tab({ Title = "99页", Icon = "box" }),
+        InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
+        Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
+    }
+
+    -- ========== 主界面内容 ==========
+    TabHandles.Main:Paragraph({
+        Title = "皮空重置",
+        Desc = "欢迎使用皮空重置脚本！\n所有功能已解锁，请尽情使用！",
+        Image = "user",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a"),
+    })
+
+    TabHandles.Main:Divider()
+
+    -- 系统信息
+    local player = game.Players.LocalPlayer
+
+    TabHandles.Main:Paragraph({
+        Title = "系统信息",
+        Desc = string.format("用户名: %s\n显示名: %s\n用户ID: %d\n账号年龄: %d天", 
+            player.Name, player.DisplayName, player.UserId, player.AccountAge),
+        Image = "info",
+        ImageSize = 20,
+        Color = Color3.fromHex("#315dff")
+    })
+
+    -- 帧率显示
+    local fpsCounter = 0
+    local fpsLastTime = tick()
+    local fpsText = "计算中..."
+
+    spawn(function()
+        while true do
+            fpsCounter = fpsCounter + 1
+            if tick() - fpsLastTime >= 1 then
+                fpsText = fpsCounter .. " FPS"
+                fpsCounter = 0
+                fpsLastTime = tick()
+            end
+            game:GetService("RunService").RenderStepped:Wait()
+        end
+    end)
+
+    TabHandles.Main:Paragraph({
+        Title = "性能信息",
+        Desc = "帧率: " .. fpsText,
+        Image = "bar-chart",
+        ImageSize = 20,
+        Color = Color3.fromHex("#ff6b35")
+    })
+
+    -- ========== 核心功能标签页 ==========
+    TabHandles.Core:Paragraph({
+        Title = "核心功能",
+        Desc = "游戏基础功能修改",
+        Image = "zap",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    TabHandles.Core:Divider()
+
+    local NoclipConnection
+    local NoclipToggle = TabHandles.Core:Toggle({
+        Title = "穿墙模式",
+        Desc = "允许穿过墙壁和障碍物",
+        Value = false,
+        Callback = function(state)
+            if state then
+                NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+                    if game.Players.LocalPlayer.Character then
+                        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                            if part:IsA("BasePart") and part.CanCollide then
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end)
+                Notification:Notify(
+                    {Title = "穿墙模式", Description = "已启用穿墙模式"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                if NoclipConnection then
+                    NoclipConnection:Disconnect()
+                    NoclipConnection = nil
+                end
+                Notification:Notify(
+                    {Title = "穿墙模式", Description = "已禁用穿墙模式"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    local InfiniteJumpConnection
+    local InfiniteJumpToggle = TabHandles.Core:Toggle({
+        Title = "无限跳跃",
+        Desc = "在空中可以无限跳跃",
+        Value = false,
+        Callback = function(state)
+            if state then
+                InfiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+                    if game.Players.LocalPlayer.Character then
+                        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+                    end
+                end)
+                Notification:Notify(
+                    {Title = "无限跳跃", Description = "已启用无限跳跃"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                if InfiniteJumpConnection then
+                    InfiniteJumpConnection:Disconnect()
+                    InfiniteJumpConnection = nil
+                end
+                Notification:Notify(
+                    {Title = "无限跳跃", Description = "已禁用无限跳跃"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    TabHandles.Core:Button({
+        Title = "飞行模式",
+        Icon = "wind",
+        Callback = function()
+            Notification:Notify(
+                {Title = "飞行模式", Description = "正在加载飞行脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+        end
+    })
+
+    TabHandles.Core:Divider()
+
+    -- 移动速度设置
+    local SpeedValue = 16
+    local SpeedSlider = TabHandles.Core:Slider({
+        Title = "移动速度",
+        Desc = "调整角色移动速度",
+        Value = { Min = 16, Max = 100, Default = 16 },
+        Callback = function(value)
+            SpeedValue = value
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+            end
+            Notification:Notify(
+                {Title = "移动速度", Description = "已设置为: " .. value},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 2, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 150, 200)}
+            )
+        end
+    })
+
+    -- 跳跃高度设置
+    local JumpValue = 50
+    local JumpSlider = TabHandles.Core:Slider({
+        Title = "跳跃高度",
+        Desc = "调整角色跳跃高度",
+        Value = { Min = 50, Max = 200, Default = 50 },
+        Callback = function(value)
+            JumpValue = value
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+            end
+            Notification:Notify(
+                {Title = "跳跃高度", Description = "已设置为: " .. value},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 2, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 150, 200)}
+            )
+        end
+    })
+
+    -- ========== 极速汉化标签页 ==========
+    TabHandles.Translate:Paragraph({
+        Title = "极速汉化设置",
+        Desc = "自动翻译游戏界面文本",
+        Image = "languages",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    TabHandles.Translate:Divider()
+
+    local TranslateEngine = {
+        isRunning = false,
+        cache = {},
+        textData = {}
+    }
+
+    local function translateText(text)
+        if not text or text == "" then return "" end
+        
+        if TranslateEngine.cache[text] then
+            return TranslateEngine.cache[text]
+        end
+        
+        local url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q=" .. game:GetService("HttpService"):UrlEncode(text)
+        
+        local success, result = pcall(function()
+            return game:HttpGet(url)
+        end)
+        
+        if success and result then
+            local decoded = game:GetService("HttpService"):JSONDecode(result)
+            if decoded and decoded[1] then
+                local translated = ""
+                for _, item in ipairs(decoded[1]) do
+                    if item[1] then
+                        translated = translated .. item[1]
+                    end
+                end
+                TranslateEngine.cache[text] = translated
+                return translated
+            end
+        end
+        
+        return text
+    end
+
+    local function scanAndTranslate()
+        if not TranslateEngine.isRunning then return end
+        
+        local guis = {
+            game:GetService("CoreGui"),
+            game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+        }
+        
+        local translatedCount = 0
+        
+        for _, gui in ipairs(guis) do
+            for _, descendant in ipairs(gui:GetDescendants()) do
+                if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
+                    local text = descendant.Text
+                    if text and text ~= "" and #text > 2 and #text < 100 then
+                        if text:match("%a") and not text:match("[\228-\233][\128-\191].") then
+                            local translated = translateText(text)
+                            if translated and translated ~= text then
+                                pcall(function()
+                                    descendant.Text = translated
+                                    translatedCount = translatedCount + 1
+                                end)
+                            end
                         end
                     end
                 end
             end
         end
-    end
-    
-    if translatedCount > 0 then
-        Rayfield:Notify({
-            Title = "极速汉化",
-            Content = "已翻译 " .. translatedCount .. " 个文本",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end
-end
-
-local TranslateToggle = TranslateTab:CreateToggle({
-    Name = "启用极速汉化",
-    CurrentValue = false,
-    Flag = "TranslateToggle",
-    Callback = function(Value)
-        TranslateEngine.isRunning = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "极速汉化",
-                Content = "汉化功能已启用，开始扫描界面...",
-                Duration = 3,
-                Image = 4483362458,
-            })
-            spawn(function()
-                while TranslateEngine.isRunning do
-                    scanAndTranslate()
-                    wait(5)
-                end
-            end)
-        else
-            Rayfield:Notify({
-                Title = "极速汉化",
-                Content = "汉化功能已关闭",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-TranslateTab:CreateButton({
-    Name = "立即翻译界面",
-    Callback = function()
-        if TranslateEngine.isRunning then
-            scanAndTranslate()
-        else
-            Rayfield:Notify({
-                Title = "极速汉化",
-                Content = "请先启用极速汉化",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-TranslateTab:CreateButton({
-    Name = "清空翻译缓存",
-    Callback = function()
-        TranslateEngine.cache = {}
-        Rayfield:Notify({
-            Title = "极速汉化",
-            Content = "翻译缓存已清空",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
-local TranslateSpeed = 5
-TranslateTab:CreateSlider({
-    Name = "翻译扫描间隔",
-    Range = {1, 30},
-    Increment = 1,
-    Suffix = "秒",
-    CurrentValue = 5,
-    Flag = "TranslateSpeed",
-    Callback = function(Value)
-        TranslateSpeed = Value
-    end,
-})
-
-local StatusSection = TranslateTab:CreateSection("状态信息")
-local StatusLabel = TranslateTab:CreateLabel("状态: 未运行")
-local CacheLabel = TranslateTab:CreateLabel("缓存文本: 0")
-
-spawn(function()
-    while true do
-        wait(1)
-        StatusLabel:SetText("状态: " .. (TranslateEngine.isRunning and "运行中" or "已停止"))
-        CacheLabel:SetText("缓存文本: " .. (table.getn(TranslateEngine.cache) or 0))
-    end
-end)
-
--- ========== 99页标签页 ==========
-local V99Section = V99Tab:CreateSection("虚空脚本")
-
-V99Tab:CreateButton({
-    Name = "加载虚空脚本",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "99页",
-            Content = "正在加载虚空脚本...",
-            Duration = 3,
-            Image = 4483362458,
-        })
         
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "99页",
-                Content = "虚空脚本加载成功！",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "99页",
-                Content = "虚空脚本加载失败: " .. tostring(err),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-V99Tab:CreateLabel("这个脚本挺强的")
-
--- ========== 墨水游戏标签页 ==========
-local InkGameSection = InkGameTab:CreateSection("墨水游戏脚本")
-
-InkGameTab:CreateButton({
-    Name = "加载墨水游戏汉化",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "墨水游戏",
-            Content = "正在加载墨水游戏汉化脚本...",
-            Duration = 3,
-            Image = 4483362458,
-        })
-        
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/Ringta"))()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "墨水游戏",
-                Content = "墨水游戏汉化脚本加载成功！",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "墨水游戏",
-                Content = "墨水游戏汉化脚本加载失败: " .. tostring(err),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-InkGameTab:CreateLabel("这个有防作弊")
-
--- ========== 其他功能 ==========
-local OtherSection = OtherTab:CreateSection("其他功能")
-
-OtherTab:CreateButton({
-    Name = "显示服务器信息",
-    Callback = function()
-        local players = game.Players:GetPlayers()
-        Rayfield:Notify({
-            Title = "服务器信息",
-            Content = "玩家数量: " .. #players .. "/" .. game.Players.MaxPlayers .. "\n服务器位置: " .. game.JobId,
-            Duration = 6,
-            Image = 4483362458,
-        })
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "显示玩家列表",
-    Callback = function()
-        local playerNames = ""
-        for i, player in pairs(game.Players:GetPlayers()) do
-            playerNames = playerNames .. player.Name .. " (ID: " .. player.UserId .. ")\n"
-        end
-        
-        Rayfield:Notify({
-            Title = "在线玩家 (" .. #game.Players:GetPlayers() .. ")",
-            Content = playerNames,
-            Duration = 10,
-            Image = 4483362458,
-        })
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "重置角色",
-    Callback = function()
-        if game.Players.LocalPlayer.Character then
-            game.Players.LocalPlayer.Character:BreakJoints()
-        end
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "显示详细用户信息",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local info = "用户名: " .. player.Name ..
-                    "\n显示名: " .. player.DisplayName ..
-                    "\n用户ID: " .. player.UserId ..
-                    "\n账号年龄: " .. player.AccountAge .. " 天" ..
-                    "\n会员状态: " .. (player.MembershipType == Enum.MembershipType.Premium and "高级会员" or "普通会员")
-        
-        Rayfield:Notify({
-            Title = "用户信息",
-            Content = info,
-            Duration = 8,
-            Image = 4483362458,
-        })
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "显示注入器信息",
-    Callback = function()
-        local injectorName = "未知"
-        if identifyexecutor then
-            injectorName = identifyexecutor()
-        end
-        
-        Rayfield:Notify({
-            Title = "注入器信息",
-            Content = "注入器: " .. injectorName .. "\n作者: 皮炎，司空\n皮炎快手1466456286司空快手smalldesikonn\状态: 运行中",
-            Duration = 8,
-            Image = 4483362458,
-        })
-    end,
-})
-
-local FPSDisplayEnabled = false
-local FPSDisplayConnection
-OtherTab:CreateToggle({
-    Name = "显示实时帧率",
-    CurrentValue = false,
-    Flag = "FPSDisplayToggle",
-    Callback = function(Value)
-        FPSDisplayEnabled = Value
-        if Value then
-            local ScreenGui = Instance.new("ScreenGui")
-            ScreenGui.Name = "FPSDisplay"
-            ScreenGui.Parent = game.CoreGui
-            
-            local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(0, 120, 0, 40)
-            Frame.Position = UDim2.new(0, 10, 0, 10)
-            Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            Frame.BackgroundTransparency = 0.3
-            Frame.BorderSizePixel = 0
-            Frame.Parent = ScreenGui
-            
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 8)
-            Corner.Parent = Frame
-            
-            local FPSLabel = Instance.new("TextLabel")
-            FPSLabel.Size = UDim2.new(1, 0, 1, 0)
-            FPSLabel.BackgroundTransparency = 1
-            FPSLabel.Text = "FPS: 0"
-            FPSLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            FPSLabel.TextSize = 16
-            FPSLabel.Font = Enum.Font.GothamBold
-            FPSLabel.Parent = Frame
-            
-            local fpsCounter = 0
-            local fpsLastTime = tick()
-            
-            FPSDisplayConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                fpsCounter = fpsCounter + 1
-                if tick() - fpsLastTime >= 1 then
-                    FPSLabel.Text = "FPS: " .. fpsCounter
-                    fpsCounter = 0
-                    fpsLastTime = tick()
-                end
-            end)
-        else
-            if FPSDisplayConnection then
-                FPSDisplayConnection:Disconnect()
-                FPSDisplayConnection = nil
-            end
-            local FPSDisplay = game.CoreGui:FindFirstChild("FPSDisplay")
-            if FPSDisplay then
-                FPSDisplay:Destroy()
-            end
-        end
-    end,
-})
-
--- ========== FE功能 ==========
-local FESection = OtherTab:CreateSection("FE功能")
-
-OtherTab:CreateButton({
-    Name = "R15无敌少侠飞行",
-    Callback = function()
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "R6无敌少侠飞行",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/%E6%97%A0%E6%95%8C%E5%B0%91%E4%BE%A0%E9%A3%9E%E8%A1%8Cr6.txt"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "R15鹿菅",
-    Callback = function()
-        loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "R6鹿菅",
-    Callback = function()
-        loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "蛇动作",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/qwertys/refs/heads/main/qwerty5.lua"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "防摔落",
-    Callback = function()
-        loadstring(game:HttpGet("http://rawscripts.net/raw/Universal-Script-Touch-fling-script-22447"))()
-    end,
-})
-
-OtherTab:CreateButton({
-    Name = "R6动作脚本",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "FE功能",
-            Content = "正在加载R6动作脚本...",
-            Duration = 3,
-            Image = 4483362458,
-        })
-        
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-R6-Animations-Menu-By-Me-19427"))()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "FE功能",
-                Content = "R6动作脚本加载成功！",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "FE功能",
-                Content = "R6动作脚本加载失败: " .. tostring(err),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
--- 辅助函数
-function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-    
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-            if distance < shortestDistance then
-                shortestDistance = distance
-                closestPlayer = player
-            end
+        if translatedCount > 0 then
+            Notification:Notify(
+                {Title = "极速汉化", Description = "已翻译 " .. translatedCount .. " 个文本"},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+            )
         end
     end
-    
-    return closestPlayer
-end
 
-function createESP(player)
-    if player.Character then
-        local highlight = Instance.new("Highlight")
-        highlight.Name = "皮空ESP"
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
-        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0
-        
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "皮空NameTag"
-        billboard.Adornee = player.Character.Head
-        billboard.Size = UDim2.new(0, 200, 0, 50)
-        billboard.StudsOffset = Vector3.new(0, 3, 0)
-        billboard.AlwaysOnTop = true
-        billboard.Parent = player.Character.Head
-        
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1, 0, 1, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = player.Name
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.TextSize = 14
-        nameLabel.Font = Enum.Font.GothamBold
-        nameLabel.Parent = billboard
-        
-        local distanceBillboard = Instance.new("BillboardGui")
-        distanceBillboard.Name = "皮空Distance"
-        distanceBillboard.Adornee = player.Character.Head
-        distanceBillboard.Size = UDim2.new(0, 200, 0, 30)
-        distanceBillboard.StudsOffset = Vector3.new(0, 1.5, 0)
-        distanceBillboard.AlwaysOnTop = true
-        distanceBillboard.Parent = player.Character.Head
-        
-        local distanceLabel = Instance.new("TextLabel")
-        distanceLabel.Size = UDim2.new(1, 0, 1, 0)
-        distanceLabel.BackgroundTransparency = 1
-        distanceLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
-        distanceLabel.TextSize = 12
-        distanceLabel.Font = Enum.Font.Gotham
-        distanceLabel.Parent = distanceBillboard
-        
-        spawn(function()
-            while player.Character and player.Character:FindFirstChild("Head") do
-                task.wait(0.1)
-                pcall(function()
-                    local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                    distanceLabel.Text = "距离: " .. math.floor(distance) .. " 米"
+    local TranslateToggle = TabHandles.Translate:Toggle({
+        Title = "启用极速汉化",
+        Desc = "自动扫描并翻译界面文本",
+        Value = false,
+        Callback = function(state)
+            TranslateEngine.isRunning = state
+            if state then
+                Notification:Notify(
+                    {Title = "极速汉化", Description = "汉化功能已启用，开始扫描界面..."},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+                spawn(function()
+                    while TranslateEngine.isRunning do
+                        scanAndTranslate()
+                        wait(5)
+                    end
                 end)
+            else
+                Notification:Notify(
+                    {Title = "极速汉化", Description = "汉化功能已关闭"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
             end
-        end)
-    end
-end
+        end
+    })
 
-function removeESP(player)
-    if player.Character then
-        local highlight = player.Character:FindFirstChild("皮空ESP")
-        if highlight then
-            highlight:Destroy()
+    TabHandles.Translate:Button({
+        Title = "立即翻译界面",
+        Icon = "refresh-cw",
+        Callback = function()
+            if TranslateEngine.isRunning then
+                scanAndTranslate()
+            else
+                Notification:Notify(
+                    {Title = "极速汉化", Description = "请先启用极速汉化"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+                )
+            end
         end
-        
-        local nameTag = player.Character:FindFirstChild("Head"):FindFirstChild("皮空NameTag")
-        if nameTag then
-            nameTag:Destroy()
-        end
-        
-        local distanceTag = player.Character:FindFirstChild("Head"):FindFirstChild("皮空Distance")
-        if distanceTag then
-            distanceTag:Destroy()
-        end
-    end
-end
+    })
 
-print("皮空重制版 - 界面初始化完成！")
+    TabHandles.Translate:Button({
+        Title = "清空翻译缓存",
+        Icon = "trash-2",
+        Callback = function()
+            TranslateEngine.cache = {}
+            Notification:Notify(
+                {Title = "极速汉化", Description = "翻译缓存已清空"},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 150, 200)}
+            )
+        end
+    })
+
+    -- ========== 99页标签页 ==========
+    TabHandles.V99:Paragraph({
+        Title = "99页脚本集合",
+        Desc = "加载各种强大的99页脚本",
+        Image = "box",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    TabHandles.V99:Button({
+        Title = "加载虚空脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载虚空脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "虚空脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "虚空脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    TabHandles.V99:Button({
+        Title = "加载99夜红蛇",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载99夜红蛇脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "99夜红蛇脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "99夜红蛇脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    TabHandles.V99:Button({
+        Title = "加载不知名99夜",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载不知名99夜脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/adibhub1/99-nighit-in-forest/refs/heads/main/99%20night%20in%20forest"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "不知名99夜脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "不知名99夜脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    TabHandles.V99:Paragraph({
+        Title = "提示",
+        Desc = "这些脚本都很强大，请谨慎使用",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#ff6b35")
+    })
+
+    -- ========== 墨水游戏标签页 ==========
+    TabHandles.InkGame:Paragraph({
+        Title = "墨水游戏脚本",
+        Desc = "加载墨水游戏相关功能",
+        Image = "pen-tool",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    TabHandles.InkGame:Button({
+        Title = "加载墨水游戏汉化",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "墨水游戏", Description = "正在加载墨水游戏汉化脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/Ringta"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "墨水游戏", Description = "墨水游戏汉化脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "墨水游戏", Description = "墨水游戏汉化脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 80, 80)}
+                )
+            end
+        end
+    })
+
+    TabHandles.InkGame:Paragraph({
+        Title = "注意",
+        Desc = "这个有防作弊",
+        Image = "alert-triangle",
+        ImageSize = 16,
+        Color = Color3.fromHex("#ff6b35")
+    })
+
+    -- ========== 其他功能标签页 ==========
+    TabHandles.Other:Paragraph({
+        Title = "其他功能",
+        Desc = "各种实用工具和FE功能",
+        Image = "grid",
+        ImageSize = 20,
+        Color = Color3.fromHex("#30ff6a")
+    })
+
+    TabHandles.Other:Divider()
+
+    TabHandles.Other:Button({
+        Title = "显示服务器信息",
+        Icon = "server",
+        Callback = function()
+            local players = game.Players:GetPlayers()
+            Notification:Notify(
+                {Title = "服务器信息", Description = "玩家数量: " .. #players .. "/" .. game.Players.MaxPlayers},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 150, 200)}
+            )
+        end
+    })
+
+    TabHandles.Other:Button({
+        Title = "重置角色",
+        Icon = "refresh-cw",
+        Callback = function()
+            if game.Players.LocalPlayer.Character then
+                game.Players.LocalPlayer.Character:BreakJoints()
+                Notification:Notify(
+                    {Title = "重置角色", Description = "角色已重置"},
+                    {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 2, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 150, 200)}
+                )
+            end
+        end
+    })
+
+    TabHandles.Other:Divider()
+
+    -- FE功能
+    TabHandles.Other:Paragraph({
+        Title = "FE功能",
+        Desc = "各种FE脚本",
+        Image = "zap",
+        ImageSize = 18,
+        Color = Color3.fromHex("#315dff")
+    })
+
+    TabHandles.Other:Button({
+        Title = "R15无敌少侠飞行",
+        Icon = "wind",
+        Callback = function()
+            Notification:Notify(
+                {Title = "FE功能", Description = "正在加载R15无敌少侠飞行..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"))()
+        end
+    })
+
+    TabHandles.Other:Button({
+        Title = "R6无敌少侠飞行",
+        Icon = "wind",
+        Callback = function()
+            Notification:Notify(
+                {Title = "FE功能", Description = "正在加载R6无敌少侠飞行..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/%E6%97%A0%E6%95%8C%E5%B0%91%E4%BE%A0%E9%A3%9E%E8%A1%8Cr6.txt"))()
+        end
+    })
+
+    TabHandles.Other:Button({
+        Title = "蛇动作",
+        Icon = "activity",
+        Callback = function()
+            Notification:Notify(
+                {Title = "FE功能", Description = "正在加载蛇动作..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/qwertys/refs/heads/main/qwerty5.lua"))()
+        end
+    })
+
+    TabHandles.Other:Button({
+        Title = "防摔落",
+        Icon = "shield",
+        Callback = function()
+            Notification:Notify(
+                {Title = "FE功能", Description = "正在加载防摔落..."},
+                {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(200, 180, 80)}
+            )
+            loadstring(game:HttpGet("http://rawscripts.net/raw/Universal-Script-Touch-fling-script-22447"))()
+        end
+    })
+
+    -- 页脚信息
+    TabHandles.Other:Paragraph({
+        Title = "关于",
+        Desc = "作者: 皮炎\n联系方式: 快手1466456286",
+        Image = "user",
+        ImageSize = 20,
+        Color = Color3.fromHex("#888888"),
+        Buttons = {
+            {
+                Title = "复制联系方式",
+                Icon = "copy",
+                Variant = "Tertiary",
+                Callback = function()
+                    setclipboard("快手1466456286")
+                    Notification:Notify(
+                        {Title = "复制成功", Description = "已复制联系方式到剪贴板"},
+                        {OutlineColor = Color3.fromRGB(0, 0, 0),Time = 2, Type = "image"},
+                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(80, 200, 120)}
+                    )
+                end
+            }
+        }
+    })
+
+    -- 窗口关闭时的处理
+    Window:OnClose(function()
+        print("皮空重置 - 窗口已关闭")
+        
+        -- 清理连接
+        if NoclipConnection then
+            NoclipConnection:Disconnect()
+        end
+        if InfiniteJumpConnection then
+            InfiniteJumpConnection:Disconnect()
+        end
+    end)
+
+    print("皮空重置 - WindUI界面初始化完成！")
+end
