@@ -619,6 +619,8 @@ function initMainScript()
         Core = Window:Section({ Title = "核心功能", Opened = true }),
         Teleport = Window:Section({ Title = "传送功能", Opened = true }),
         Translate = Window:Section({ Title = "极速汉化", Opened = true }),
+        Strongest = Window:Section({ Title = "最强战场", Opened = true }),
+        Abandoned = Window:Section({ Title = "被遗弃", Opened = true }),
         V99 = Window:Section({ Title = "99页", Opened = true }),
         InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
         Other = Window:Section({ Title = "其他功能", Opened = true })
@@ -629,6 +631,8 @@ function initMainScript()
         Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
         Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
         Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
+        Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
+        Abandoned = Tabs.Abandoned:Tab({ Title = "被遗弃", Icon = "archive" }),
         V99 = Tabs.V99:Tab({ Title = "99页", Icon = "box" }),
         InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
         Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
@@ -1273,6 +1277,184 @@ function initMainScript()
                 {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
             )
         end
+    })
+
+    -- ========== 最强战场标签页 ==========
+    TabHandles.Strongest:Paragraph({
+        Title = "最强战场脚本",
+        Desc = "加载最强战场相关功能脚本",
+        Image = "crosshair",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.Strongest:Divider()
+
+    -- 不知名脚本一
+    TabHandles.Strongest:Button({
+        Title = "加载不知名脚本一",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "最强战场", Description = "正在加载不知名脚本一..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x63\x79\x74\x6a\x37\x37\x37\x69\x2f\x44\x65\x6c\x69\x76\x65\x72\x2d\x74\x68\x72\x6f\x75\x67\x68\x2d\x74\x68\x65\x2d\x77\x61\x6c\x6c\x2d\x70\x65\x72\x73\x70\x65\x63\x74\x69\x76\x65\x2f\x6d\x61\x69\x6e\x2f\xe5\xa4\xa9\xe4\xb8\x8b\xe5\xb8\x83\xe6\xad\xa6"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "最强战场", Description = "不知名脚本一加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "最强战场", Description = "不知名脚本一加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 不知名脚本二
+    TabHandles.Strongest:Button({
+        Title = "加载不知名脚本二",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "最强战场", Description = "正在加载不知名脚本二..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/cytj777i/Deliver-through-the-wall-perspective/main/%E8%87%AA%E5%8A%A8%E6%9C%9D%E5%90%91"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "最强战场", Description = "不知名脚本二加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "最强战场", Description = "不知名脚本二加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 隐身脚本
+    TabHandles.Strongest:Button({
+        Title = "加载隐身脚本",
+        Icon = "eye-off",
+        Callback = function()
+            Notification:Notify(
+                {Title = "最强战场", Description = "正在加载隐身脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://rawscripts.net/raw/The-Strongest-Battlegrounds-NSExpression-v2-a3-TSBG-20252"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "最强战场", Description = "隐身脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "最强战场", Description = "隐身脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    TabHandles.Strongest:Paragraph({
+        Title = "提示",
+        Desc = "这些脚本专为最强战场游戏设计",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
+    })
+
+    -- ========== 被遗弃标签页 ==========
+    TabHandles.Abandoned:Paragraph({
+        Title = "被遗弃脚本",
+        Desc = "加载被遗弃相关功能脚本",
+        Image = "archive",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.Abandoned:Divider()
+
+    -- B0bby脚本
+    TabHandles.Abandoned:Button({
+        Title = "加载B0bby脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "被遗弃", Description = "正在加载B0bby脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                getgenv().XiaoPi="被遗弃-B0bby[汉化版]" 
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/187ec501507e956200e0741a7bc38ca1cd83973f/%E8%A2%AB%E9%81%97%E5%BC%83B0bby%E6%B1%89%E5%8C%96%20(1).lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "被遗弃", Description = "B0bby脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "被遗弃", Description = "B0bby脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 复制卡密按钮
+    TabHandles.Abandoned:Button({
+        Title = "复制卡密",
+        Icon = "copy",
+        Callback = function()
+            local key = "Samuelspizzatrip"
+            setclipboard(key)
+            Notification:Notify(
+                {Title = "被遗弃", Description = "卡密已复制到剪贴板: " .. key},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    TabHandles.Abandoned:Paragraph({
+        Title = "使用说明",
+        Desc = "1. 先复制卡密\n2. 然后加载B0bby脚本\n3. 在脚本中输入复制的卡密",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
     })
 
     -- ========== 99页标签页 ==========
