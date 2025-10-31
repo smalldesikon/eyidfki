@@ -575,7 +575,7 @@ function initMainScript()
     )
 
     -- 使用WindUI库
-    local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua").Value)()
+    local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
     -- 创建窗口
     local Window = WindUI:CreateWindow({
@@ -616,7 +616,7 @@ function initMainScript()
     -- 创建各个标签页
     local Tabs = {
         Main = Window:Section({ Title = "主界面", Opened = true }),
-        Core = Window:Section({ Title = "核心功能", Opened = true }),
+        Core = Window:Section({ Title = "通用", Opened = true }),
         Teleport = Window:Section({ Title = "传送功能", Opened = true }),
         Translate = Window:Section({ Title = "极速汉化", Opened = true }),
         Strongest = Window:Section({ Title = "最强战场", Opened = true }),
@@ -629,7 +629,7 @@ function initMainScript()
 
     local TabHandles = {
         Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
-        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
+        Core = Tabs.Core:Tab({ Title = "通用", Icon = "zap" }),
         Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
         Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
         Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
