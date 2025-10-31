@@ -575,7 +575,7 @@ function initMainScript()
     )
 
     -- 使用WindUI库
-    local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+    local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua").Value)()
 
     -- 创建窗口
     local Window = WindUI:CreateWindow({
@@ -622,6 +622,7 @@ function initMainScript()
         Strongest = Window:Section({ Title = "最强战场", Opened = true }),
         Abandoned = Window:Section({ Title = "被遗弃", Opened = true }),
         V99 = Window:Section({ Title = "99页", Opened = true }),
+        DeadRails = Window:Section({ Title = "死铁轨", Opened = true }),
         InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
         Other = Window:Section({ Title = "其他功能", Opened = true })
     }
@@ -634,6 +635,7 @@ function initMainScript()
         Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
         Abandoned = Tabs.Abandoned:Tab({ Title = "被遗弃", Icon = "archive" }),
         V99 = Tabs.V99:Tab({ Title = "99页", Icon = "box" }),
+        DeadRails = Tabs.DeadRails:Tab({ Title = "死铁轨", Icon = "train" }),
         InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
         Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
     }
@@ -1466,6 +1468,9 @@ function initMainScript()
         Color = Color3.fromHex("#0078D7")
     })
 
+    TabHandles.V99:Divider()
+
+    -- 虚空脚本
     TabHandles.V99:Button({
         Title = "加载虚空脚本",
         Icon = "download",
@@ -1496,6 +1501,7 @@ function initMainScript()
         end
     })
 
+    -- 99夜红蛇
     TabHandles.V99:Button({
         Title = "加载99夜红蛇",
         Icon = "download",
@@ -1526,6 +1532,7 @@ function initMainScript()
         end
     })
 
+    -- 不知名99夜
     TabHandles.V99:Button({
         Title = "加载不知名99夜",
         Icon = "download",
@@ -1556,9 +1563,214 @@ function initMainScript()
         end
     })
 
+    -- H4x99页脚本
+    TabHandles.V99:Button({
+        Title = "加载H4x99页脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载H4x99页脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/xyx8846/-/refs/heads/main/H4x%E6%B1%89%E5%8C%96%E8%84%9A%E6%9C%AC"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "H4x99页脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "H4x99页脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 可杀队友脚本
+    TabHandles.V99:Button({
+        Title = "加载可杀队友脚本",
+        Icon = "users",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载可杀队友脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/358545698555/roblox-/refs/heads/main/%E5%8F%AF%E6%9D%80%E9%98%9F%E5%8F%8B99%E5%A4%9C"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "可杀队友脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "可杀队友脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- OP99页脚本
+    TabHandles.V99:Button({
+        Title = "加载OP99页脚本",
+        Icon = "zap",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载OP99页脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/99Nights"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "OP99页脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "OP99页脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 二狗子99页脚本
+    TabHandles.V99:Button({
+        Title = "加载二狗子99页脚本",
+        Icon = "github",
+        Callback = function()
+            Notification:Notify(
+                {Title = "99页", Description = "正在加载二狗子99页脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/gycgchgyfytdttr/shenqin/refs/heads/main/99day.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "99页", Description = "二狗子99页脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "99页", Description = "二狗子99页脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
     TabHandles.V99:Paragraph({
         Title = "提示",
         Desc = "这些脚本都很强大，请谨慎使用",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
+    })
+
+    -- ========== 死铁轨标签页 ==========
+    TabHandles.DeadRails:Paragraph({
+        Title = "死铁轨脚本",
+        Desc = "加载死铁轨相关功能脚本",
+        Image = "train",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.DeadRails:Divider()
+
+    -- Dead脚本
+    TabHandles.DeadRails:Button({
+        Title = "加载Dead脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "死铁轨", Description = "正在加载Dead脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/File-Script/Dead%20rails.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "死铁轨", Description = "Dead脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "死铁轨", Description = "Dead脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- VZ脚本
+    TabHandles.DeadRails:Button({
+        Title = "加载VZ脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "死铁轨", Description = "正在加载VZ脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Dex-Bear/Vxezehub/refs/heads/main/VxezeHubMain"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "死铁轨", Description = "VZ脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "死铁轨", Description = "VZ脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    TabHandles.DeadRails:Paragraph({
+        Title = "注意",
+        Desc = "这些脚本专为死铁轨游戏设计",
         Image = "info",
         ImageSize = 16,
         Color = Color3.fromHex("#0099FF")
@@ -1622,7 +1834,7 @@ function initMainScript()
 
     TabHandles.Other:Divider()
 
-    -- 重新制作的无限R恶作剧按钮
+    -- 修复的无限R恶作剧按钮
     TabHandles.Other:Button({
         Title = "无限R",
         Icon = "alert-triangle",
@@ -1762,19 +1974,41 @@ function initMainScript()
                     end
                 end)
                 
-                -- 添加嘲讽音效（模拟）
+                -- 添加真实音效
                 spawn(function()
+                    -- 创建音效
+                    local sound = Instance.new("Sound")
+                    sound.SoundId = "rbxassetid://9117008338"  -- 嘲讽笑声音效
+                    sound.Volume = 1
+                    sound.Parent = game:GetService("SoundService")
+                    
+                    -- 播放音效
+                    sound:Play()
+                    
+                    -- 等待音效播放完成
+                    wait(3)
+                    
+                    -- 循环播放音效
                     while true do
-                        -- 这里可以添加音效，但为了简洁省略
-                        task.wait(2)
+                        sound:Play()
+                        wait(5)
                     end
                 end)
                 
                 prankGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
                 
+                -- 等待确保界面和声音都显示/播放了
+                wait(3)
+                
                 -- 卡死游戏
                 while true do
                     -- 无限循环导致游戏卡死
+                    for i = 1, 1000000 do
+                        -- 大量计算操作卡死游戏
+                        local x = math.random(1, 1000000)
+                        local y = math.random(1, 1000000)
+                        local z = x * y / math.random(1, 1000)
+                    end
                 end
             end)
         end
