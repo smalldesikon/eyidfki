@@ -831,6 +831,13 @@ function initMainScript()
             game.Workspace.Gravity = value
         end
     })
+    
+    Tabs.CoreTab:Button({
+        Title = "无头短腿美化",
+        Callback = function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Permanent-Headless-And-korblox-Script-4140"))()
+        end
+    })
 
     -- 穿墙功能
     local Noclip = false
