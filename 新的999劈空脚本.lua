@@ -563,590 +563,328 @@ coroutine.wrap(loadingAnimation)()
 
 -- 主脚本初始化函数
 function initMainScript()
-    -- 加载通知面板
-    local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
-    local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+    -- 使用皮空的WindUI库
+    local success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingyan777/roblox/refs/heads/main/main.lua"))()
+    end)
+    
+    if not success then
+        -- 如果皮空的库加载失败，使用备用方案
+        loadSimpleUI()
+        return
+    end
 
-    -- 显示加载完成通知
-    Notification:Notify(
-        {Title = "皮空重置", Description = "脚本加载完成！享受使用吧！"},
-        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-    )
+    WindUI:Notify({
+        Title = "皮空重置版",
+        Content = "执行成功",
+        Duration = 4
+    })
 
-    -- 使用WindUI库
-    local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+    local Confirmed = false
 
-    -- 创建窗口
-    local Window = WindUI:CreateWindow({
-        Title = "皮空重置",
-        Icon = "settings",
-        Author = "皮空重置 - 已加载",
-        Folder = "皮空脚本",
-        Size = UDim2.fromOffset(600, 500),
+    WindUI:Popup({
+        Title = "皮空重置版",
+        IconThemed = true,
+        Content = "欢迎尊贵的用户使用皮空",
         Theme = "Light",
-        User = {
-            Enabled = true,
-            Anonymous = false,
-            Callback = function()
-                local player = game.Players.LocalPlayer
-                Notification:Notify(
-                    {Title = "用户信息", Description = string.format("用户名: %s\n显示名: %s\n用户ID: %d", 
-                        player.Name, player.DisplayName, player.UserId)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 6, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        },
+        Buttons = {
+            {
+                Title = "退出",
+                Callback = function() end,
+                Variant = "Secondary",
+            },
+            {
+                Title = "进入",
+                Icon = "arrow-right",
+                Callback = function() Confirmed = true end,
+                Variant = "Primary",
+            }
+        }
+    })
+
+    repeat wait() until Confirmed
+
+    local Window = WindUI:CreateWindow({
+        Title = "皮空重置版",
+        Icon = "rbxassetid://137107933084759",
+        IconThemed = true,
+        Folder = "皮空脚本",
+        Size = UDim2.fromOffset(580, 340),
+        Transparent = true,
+        Theme = "Light",
+        User = { Enabled = true },
         SideBarWidth = 200,
         ScrollBarEnabled = true,
         KeySystem = {
             Key = { "皮空脚本垃圾", "皮炎是司空的爸爸" },
             Note = "想获得卡密加Q群1057315887",
             URL = "1057315887",
+            SaveKey = true,
         },
     })
 
-    -- 添加标签
     Window:Tag({
-        Title = "重置版",
-        Color = Color3.fromHex("#0078D7")
+        Title = "皮空重置版",
+        Color = Color3.fromHex("#30ff6a")
     })
 
-    -- 创建各个标签页
-    local Tabs = {
-        Main = Window:Section({ Title = "主界面", Opened = true }),
-        Core = Window:Section({ Title = "核心功能", Opened = true }),
-        Teleport = Window:Section({ Title = "传送功能", Opened = true }),
-        Translate = Window:Section({ Title = "极速汉化", Opened = true }),
-        Strongest = Window:Section({ Title = "最强战场", Opened = true }),
-        Abandoned = Window:Section({ Title = "被遗弃", Opened = true }),
-        V99 = Window:Section({ Title = "99页", Opened = true }),
-        DeadRails = Window:Section({ Title = "死铁轨", Opened = true }),
-        OtherKnown = Window:Section({ Title = "其他知名脚本", Opened = true }),
-        Backdoor = Window:Section({ Title = "后门", Opened = true }),
-        InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
-        StealBrainRed = Window:Section({ Title = "偷走脑红", Opened = true }),  -- 新增偷走脑红标签页
-        Other = Window:Section({ Title = "其他功能", Opened = true })
-    }
+    -- 创建完整的标签页结构
+    local Tabs = {}
 
-    local TabHandles = {
-        Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
-        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
-        Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
-        Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
-        Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
-        Abandoned = Tabs.Abandoned:Tab({ Title = "被遗弃", Icon = "archive" }),
-        V99 = Tabs.V99:Tab({ Title = "99页", Icon = "box" }),
-        DeadRails = Tabs.DeadRails:Tab({ Title = "死铁轨", Icon = "train" }),
-        OtherKnown = Tabs.OtherKnown:Tab({ Title = "其他知名脚本", Icon = "star" }),
-        Backdoor = Tabs.Backdoor:Tab({ Title = "后门", Icon = "key" }),
-        InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
-        StealBrainRed = Tabs.StealBrainRed:Tab({ Title = "偷走脑红", Icon = "brain" }),  -- 新增偷走脑红标签页
-        Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
-    }
+    -- 主功能部分
+    Tabs.MainSection = Window:Section({
+        Title = "主功能",
+        Icon = "home",
+        Opened = true,
+    })
 
-    -- ========== 主界面内容 ==========
-    TabHandles.Main:Paragraph({
-        Title = "皮空重置",
-        Desc = "欢迎使用皮空重置脚本！\n所有功能已解锁，请尽情使用！",
+    Tabs.CoreSection = Window:Section({
+        Title = "核心功能",
+        Opened = true,
+    })
+
+    Tabs.TranslateSection = Window:Section({
+        Title = "极速汉化",
+        Opened = true,
+    })
+
+    -- 脚本集合部分
+    Tabs.ScriptSection = Window:Section({
+        Title = "脚本集合",
+        Opened = true,
+    })
+
+    Tabs.TeleportSection = Window:Section({
+        Title = "传送功能",
+        Opened = true,
+    })
+
+    -- 游戏专门部分
+    Tabs.GameSection = Window:Section({
+        Title = "游戏专门",
+        Opened = true,
+    })
+
+    Tabs.StrongestSection = Window:Section({
+        Title = "最强战场",
+        Opened = true,
+    })
+
+    Tabs.AbandonedSection = Window:Section({
+        Title = "被遗弃",
+        Opened = true,
+    })
+
+    Tabs.V99Section = Window:Section({
+        Title = "99页",
+        Opened = true,
+    })
+
+    Tabs.DeadRailsSection = Window:Section({
+        Title = "死铁轨",
+        Opened = true,
+    })
+
+    Tabs.BackdoorSection = Window:Section({
+        Title = "后门",
+        Opened = true,
+    })
+
+    Tabs.InkGameSection = Window:Section({
+        Title = "墨水游戏",
+        Opened = true,
+    })
+
+    Tabs.StealBrainRedSection = Window:Section({
+        Title = "偷走脑红",
+        Opened = true,
+    })
+
+    -- 窗口设置部分
+    Tabs.WindowSection = Window:Section({
+        Title = "窗口设置",
+        Opened = true,
+    })
+
+    -- 其他功能部分
+    Tabs.OtherSection = Window:Section({
+        Title = "其他功能",
+        Opened = true,
+    })
+
+    -- 创建所有标签页
+    -- 主功能标签页
+    Tabs.MainTab = Tabs.MainSection:Tab({ Title = "首页", Icon = "home" })
+    Tabs.CoreTab = Tabs.CoreSection:Tab({ Title = "核心功能", Icon = "zap" })
+    Tabs.TranslateTab = Tabs.TranslateSection:Tab({ Title = "极速汉化", Icon = "languages" })
+
+    -- 脚本集合标签页
+    Tabs.ScriptTab = Tabs.ScriptSection:Tab({ Title = "常用脚本", Icon = "download" })
+    Tabs.FETab = Tabs.ScriptSection:Tab({ Title = "FE脚本", Icon = "paintbrush" })
+    Tabs.KnownScriptTab = Tabs.ScriptSection:Tab({ Title = "知名脚本", Icon = "star" })
+    Tabs.TeleportTab = Tabs.TeleportSection:Tab({ Title = "传送功能", Icon = "navigation" })
+
+    -- 游戏专门标签页
+    Tabs.GameTab = Tabs.GameSection:Tab({ Title = "通用游戏", Icon = "gamepad-2" })
+    Tabs.StrongestTab = Tabs.StrongestSection:Tab({ Title = "最强战场", Icon = "crosshair" })
+    Tabs.AbandonedTab = Tabs.AbandonedSection:Tab({ Title = "被遗弃", Icon = "archive" })
+    Tabs.V99Tab = Tabs.V99Section:Tab({ Title = "99页", Icon = "box" })
+    Tabs.DeadRailsTab = Tabs.DeadRailsSection:Tab({ Title = "死铁轨", Icon = "train" })
+    Tabs.BackdoorTab = Tabs.BackdoorSection:Tab({ Title = "后门", Icon = "key" })
+    Tabs.InkGameTab = Tabs.InkGameSection:Tab({ Title = "墨水游戏", Icon = "pen-tool" })
+    Tabs.StealBrainRedTab = Tabs.StealBrainRedSection:Tab({ Title = "偷走脑红", Icon = "brain" })
+
+    -- 窗口设置标签页
+    Tabs.WindowTab = Tabs.WindowSection:Tab({ Title = "窗口设置", Icon = "app-window-mac" })
+
+    -- 其他功能标签页
+    Tabs.OtherTab = Tabs.OtherSection:Tab({ Title = "其他功能", Icon = "grid" })
+
+    Window:SelectTab(1)
+
+    -- ========== 首页内容 ==========
+    Tabs.MainTab:Paragraph({
+        Title = "皮空重置版",
+        Desc = "更便捷的脚本体验\n所有功能已解锁，请尽情使用！",
         Image = "user",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7"),
+        ImageSize = 42,
     })
 
-    TabHandles.Main:Divider()
-
-    -- 系统信息
-    local player = game.Players.LocalPlayer
-
-    TabHandles.Main:Paragraph({
+    Tabs.MainTab:Paragraph({
         Title = "系统信息",
-        Desc = string.format("用户名: %s\n显示名: %s\n用户ID: %d\n账号年龄: %d天", 
-            player.Name, player.DisplayName, player.UserId, player.AccountAge),
+        Desc = "用户名: " .. game.Players.LocalPlayer.Name .. "\n用户ID: " .. game.Players.LocalPlayer.UserId,
         Image = "info",
-        ImageSize = 20,
+        ImageSize = 24,
         Color = Color3.fromHex("#0099FF")
     })
 
-    -- 帧率显示
-    local fpsCounter = 0
-    local fpsLastTime = tick()
-    local fpsText = "计算中..."
-
-    spawn(function()
-        while true do
-            fpsCounter = fpsCounter + 1
-            if tick() - fpsLastTime >= 1 then
-                fpsText = fpsCounter .. " FPS"
-                fpsCounter = 0
-                fpsLastTime = tick()
-            end
-            game:GetService("RunService").RenderStepped:Wait()
-        end
-    end)
-
-    TabHandles.Main:Paragraph({
-        Title = "性能信息",
-        Desc = "帧率: " .. fpsText,
-        Image = "bar-chart",
-        ImageSize = 20,
-        Color = Color3.fromHex("#00A2FF")
+    -- 显示注入器信息
+    Tabs.MainTab:Paragraph({
+        Title = "您的注入器: " .. identifyexecutor(),
+        Desc = "当前使用的执行器信息",
+        Image = "cpu",
+        ImageSize = 24,
+        Color = Color3.fromHex("#FF6B6B")
     })
 
-    -- ========== 核心功能标签页 ==========
-    TabHandles.Core:Paragraph({
+    -- 皮空介绍
+    Tabs.MainTab:Paragraph({
+        Title = "皮空",
+        Desc = "皮空垃圾",
+        Image = "https://c-ssl.duitang.com/uploads/blog/202310/21/oVS4gnBVIg4A1yJ.jpg",
+        ImageSize = 42,
+        Thumbnail = "https://c-ssl.duitang.com/uploads/blog/202103/27/20210327131203_74b6b.jpg-",
+        ThumbnailSize = 200
+    })
+
+    -- ========== 核心功能 ==========
+    Tabs.CoreTab:Paragraph({
         Title = "核心功能",
         Desc = "游戏基础功能修改",
         Image = "zap",
-        ImageSize = 20,
+        ImageSize = 24,
         Color = Color3.fromHex("#0078D7")
     })
 
-    TabHandles.Core:Divider()
-
-    -- 修复的穿墙功能
-    local Noclip = false
-    local Stepped
-
-    local NoclipToggle = TabHandles.Core:Toggle({
-        Title = "穿墙模式",
-        Desc = "允许穿过墙壁和障碍物",
-        Default = false,
-        Callback = function(Value)
-            if Value then
-                Noclip = true
-                Stepped = game:GetService("RunService").Stepped:Connect(function()
-                    if Noclip == true then
-                        for a, b in pairs(game:GetService("Workspace"):GetChildren()) do
-                            if b.Name == game.Players.LocalPlayer.Name then
-                                for i, v in pairs(game:GetService("Workspace")[game.Players.LocalPlayer.Name]:GetChildren()) do
-                                    if v:IsA("BasePart") then
-                                        v.CanCollide = false
-                                    end
-                                end
-                            end
-                        end
-                    else
-                        Stepped:Disconnect()
-                    end
-                end)
-                Notification:Notify(
-                    {Title = "穿墙模式", Description = "穿墙模式已启用"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Noclip = false
-                if Stepped then
-                    Stepped:Disconnect()
-                end
-                Notification:Notify(
-                    {Title = "穿墙模式", Description = "穿墙模式已禁用"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 无限跳跃功能
-    local InfiniteJumpEnabled = false
-
-    local InfiniteJumpToggle = TabHandles.Core:Toggle({
-        Title = "无限跳跃",
-        Desc = "在空中可以无限跳跃",
-        Default = false,
-        Callback = function(state)
-            InfiniteJumpEnabled = state
-            if state then
-                local success, err = pcall(function()
-                    loadstring(game:HttpGet("https://pastebin.com/raw/V5PQy3y0", true))()
-                end)
-                
-                if success then
-                    Notification:Notify(
-                        {Title = "无限跳跃", Description = "无限跳跃已启用"},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
-                else
-                    Notification:Notify(
-                        {Title = "无限跳跃", Description = "加载失败: " .. tostring(err)},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
-                    InfiniteJumpToggle:Set(false)
-                end
-            else
-                Notification:Notify(
-                    {Title = "无限跳跃", Description = "无限跳跃已禁用"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 爬墙功能
-    local WallClimbEnabled = false
-
-    local WallClimbToggle = TabHandles.Core:Toggle({
-        Title = "爬墙功能",
-        Desc = "可以在墙上爬行",
-        Default = false,
-        Callback = function(state)
-            WallClimbEnabled = state
-            if state then
-                local success, err = pcall(function()
-                    loadstring(game:HttpGet("https://pastebin.com/raw/zXk4Rq2r"))()
-                end)
-                
-                if success then
-                    Notification:Notify(
-                        {Title = "爬墙功能", Description = "爬墙功能已启用"},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
-                else
-                    Notification:Notify(
-                        {Title = "爬墙功能", Description = "加载失败: " .. tostring(err)},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
-                    WallClimbToggle:Set(false)
-                end
-            else
-                Notification:Notify(
-                    {Title = "爬墙功能", Description = "爬墙功能已禁用"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.Core:Button({
-        Title = "飞行模式",
-        Icon = "wind",
-        Callback = function()
-            Notification:Notify(
-                {Title = "飞行模式", Description = "正在加载飞行脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-        end
-    })
-
-    TabHandles.Core:Divider()
-
     -- 移动速度设置
-    local SpeedValue = 16
-    local SpeedSlider = TabHandles.Core:Slider({
+    Tabs.CoreTab:Slider({
         Title = "移动速度",
-        Desc = "调整角色移动速度",
-        Value = { Min = 16, Max = 100, Default = 16 },
+        Value = {
+            Min = 16,
+            Max = 100,
+            Default = 16,
+        },
+        Increment = 1,
         Callback = function(value)
-            SpeedValue = value
-            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            if game.Players.LocalPlayer.Character then
                 game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
             end
-            Notification:Notify(
-                {Title = "移动速度", Description = "已设置为: " .. value},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
         end
     })
 
     -- 跳跃高度设置
-    local JumpValue = 50
-    local JumpSlider = TabHandles.Core:Slider({
+    Tabs.CoreTab:Slider({
         Title = "跳跃高度",
-        Desc = "调整角色跳跃高度",
-        Value = { Min = 50, Max = 200, Default = 50 },
+        Value = {
+            Min = 50,
+            Max = 200,
+            Default = 50,
+        },
+        Increment = 1,
         Callback = function(value)
-            JumpValue = value
-            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            if game.Players.LocalPlayer.Character then
                 game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
             end
-            Notification:Notify(
-                {Title = "跳跃高度", Description = "已设置为: " .. value},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
         end
     })
 
-    -- ========== 传送功能标签页 ==========
-    TabHandles.Teleport:Paragraph({
-        Title = "玩家传送功能",
-        Desc = "选择玩家并传送到他们的位置",
-        Image = "navigation",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.Teleport:Divider()
-
-    -- 玩家列表管理
-    local PlayerList = {}
-    local SelectedPlayer = nil
-    local PlayerButtons = {}
-
-    -- 获取玩家列表函数
-    local function GetPlayerList()
-        local players = game:GetService("Players"):GetPlayers()
-        local playerNames = {}
-        PlayerList = {}
-        
-        for _, player in ipairs(players) do
-            if player ~= game.Players.LocalPlayer then
-                table.insert(playerNames, player.Name)
-                PlayerList[player.Name] = player
-            end
-        end
-        
-        table.sort(playerNames)
-        return playerNames
-    end
-
-    -- 创建玩家按钮列表
-    local function CreatePlayerButtons()
-        local playerNames = GetPlayerList()
-        
-        -- 清除现有按钮
-        for _, button in ipairs(PlayerButtons) do
-            if button and button.Remove then
-                button:Remove()
-            end
-        end
-        PlayerButtons = {}
-        
-        if #playerNames == 0 then
-            -- 添加无玩家提示
-            local noPlayersText = TabHandles.Teleport:Paragraph({
-                Title = "无其他玩家",
-                Desc = "当前没有其他玩家在线",
-                Image = "users",
-                ImageSize = 16,
-                Color = Color3.fromHex("#0099FF")
-            })
-            table.insert(PlayerButtons, noPlayersText)
-            SelectedPlayer = nil
-            return
-        end
-        
-        -- 为每个玩家创建按钮
-        for _, playerName in ipairs(playerNames) do
-            local playerButton = TabHandles.Teleport:Button({
-                Title = playerName,
-                Icon = "user",
-                Callback = function()
-                    SelectedPlayer = PlayerList[playerName]
-                    Notification:Notify(
-                        {Title = "玩家选择", Description = "已选择玩家: " .. playerName},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
-                end
-            })
-            table.insert(PlayerButtons, playerButton)
-        end
-    end
-
-    -- 刷新玩家列表按钮
-    TabHandles.Teleport:Button({
-        Title = "刷新玩家列表",
-        Icon = "refresh-cw",
-        Callback = function()
-            -- 先清除所有现有按钮
-            for _, button in ipairs(PlayerButtons) do
-                if button and button.Remove then
-                    button:Remove()
-                end
-            end
-            PlayerButtons = {}
-            
-            -- 重新创建玩家按钮
-            CreatePlayerButtons()
-            Notification:Notify(
-                {Title = "玩家列表", Description = "已刷新玩家列表"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
+    -- 重力设置
+    Tabs.CoreTab:Slider({
+        Title = "重力",
+        Value = {
+            Min = 0.1,
+            Max = 500.0,
+            Default = 196.2,
+        },
+        Step = 0.1,
+        Callback = function(value)
+            game.Workspace.Gravity = value
         end
     })
 
-    -- 传送功能按钮
-    TabHandles.Teleport:Button({
-        Title = "传送到选中玩家",
-        Icon = "user-check",
-        Callback = function()
-            if not SelectedPlayer then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "请先选择一个玩家"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                return
+    -- 穿墙功能
+    local Noclip = false
+    local NoclipConnection
+
+    Tabs.CoreTab:Toggle({
+        Title = "穿墙模式",
+        Desc = "允许穿过墙壁和障碍物",
+        Value = false,
+        Callback = function(state)
+            Noclip = state
+            
+            if NoclipConnection then
+                NoclipConnection:Disconnect()
+                NoclipConnection = nil
             end
-            
-            local targetPlayer = SelectedPlayer
-            local localPlayer = game.Players.LocalPlayer
-            
-            -- 检查目标玩家是否仍然有效
-            if not targetPlayer or not targetPlayer.Parent then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "目标玩家已离开游戏"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                CreatePlayerButtons() -- 刷新列表
-                return
-            end
-            
-            -- 检查目标玩家是否有效
-            if not targetPlayer.Character then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "目标玩家没有角色"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                return
-            end
-            
-            local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local localRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
-            
-            if not targetRoot then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "目标玩家没有HumanoidRootPart"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                return
-            end
-            
-            if not localRoot then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "您没有HumanoidRootPart"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                return
-            end
-            
-            -- 执行传送
-            local success, err = pcall(function()
-                local originalPosition = localRoot.Position
-                localRoot.CFrame = CFrame.new(targetRoot.Position + Vector3.new(0, 3, 0))
-                wait(0.1)
-                
-                if (localRoot.Position - targetRoot.Position).Magnitude > 20 then
-                    localRoot.CFrame = CFrame.new(originalPosition)
-                    error("传送距离过远，可能被防传送机制阻止")
-                end
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "传送成功", Description = "已传送到玩家: " .. targetPlayer.Name},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(100, 255, 100)}
-                )
+
+            if state then
+                NoclipConnection = RunService.Stepped:Connect(function()
+                    local character = game.Players.LocalPlayer.Character
+                    if not character then return end
+                    
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end)
             else
-                Notification:Notify(
-                    {Title = "传送失败", Description = "传送过程中出现错误: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-            end
-        end
-    })
-
-    -- 传送到鼠标位置功能
-    TabHandles.Teleport:Button({
-        Title = "传送到鼠标位置",
-        Icon = "mouse-pointer",
-        Callback = function()
-            local localPlayer = game.Players.LocalPlayer
-            local localRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
-            
-            if not localRoot then
-                Notification:Notify(
-                    {Title = "传送失败", Description = "您没有HumanoidRootPart"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-                return
-            end
-            
-            -- 获取鼠标位置
-            local mouse = localPlayer:GetMouse()
-            local targetPosition = mouse.Hit.Position
-            
-            -- 执行传送
-            local success, err = pcall(function()
-                local originalPosition = localRoot.Position
-                localRoot.CFrame = CFrame.new(targetPosition + Vector3.new(0, 3, 0))
-                wait(0.1)
-                
-                if (localRoot.Position - targetPosition).Magnitude > 20 then
-                    localRoot.CFrame = CFrame.new(originalPosition)
-                    error("传送距离过远，可能被防传送机制阻止")
-                end
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "传送成功", Description = "已传送到鼠标位置"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(100, 255, 100)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "传送失败", Description = "传送过程中出现错误: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 100, 100)}
-                )
-            end
-        end
-    })
-
-    -- 初始化时创建玩家按钮
-    spawn(function()
-        wait(1)
-        CreatePlayerButtons()
-    end)
-
-    -- 自动刷新玩家列表
-    spawn(function()
-        while true do
-            wait(10)  -- 每10秒自动刷新一次
-            -- 清除现有按钮
-            for _, button in ipairs(PlayerButtons) do
-                if button and button.Remove then
-                    button:Remove()
+                local character = game.Players.LocalPlayer.Character
+                if character then
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
                 end
             end
-            PlayerButtons = {}
-            -- 重新创建玩家按钮
-            CreatePlayerButtons()
         end
-    end)
-
-    TabHandles.Teleport:Paragraph({
-        Title = "使用说明",
-        Desc = "1. 点击刷新玩家列表更新在线玩家\n2. 点击玩家名字选择目标玩家\n3. 点击传送到选中玩家按钮即可传送\n4. 也可以使用传送到鼠标位置功能",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
     })
 
-    -- ========== 极速汉化标签页 ==========
-    TabHandles.Translate:Paragraph({
+    -- 夜视模式
+    local Lighting = game:GetService("Lighting")
+    Tabs.CoreTab:Toggle({
+        Title = "夜视模式",
+        Desc = "增强环境光照",
+        Value = false,
+        Callback = function(state)
+            Lighting.Ambient = state and Color3.new(1, 1, 1) or Color3.new(0, 0, 0)
+        end
+    })
+
+    -- ========== 极速汉化 ==========
+    Tabs.TranslateTab:Paragraph({
         Title = "极速汉化设置",
         Desc = "自动翻译游戏界面文本",
         Image = "languages",
@@ -1154,7 +892,7 @@ function initMainScript()
         Color = Color3.fromHex("#0078D7")
     })
 
-    TabHandles.Translate:Divider()
+    Tabs.TranslateTab:Divider()
 
     local TranslateEngine = {
         isRunning = false,
@@ -1222,26 +960,26 @@ function initMainScript()
         end
         
         if translatedCount > 0 then
-            Notification:Notify(
-                {Title = "极速汉化", Description = "已翻译 " .. translatedCount .. " 个文本"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
+            WindUI:Notify({
+                Title = "极速汉化", 
+                Content = "已翻译 " .. translatedCount .. " 个文本",
+                Duration = 3
+            })
         end
     end
 
-    local TranslateToggle = TabHandles.Translate:Toggle({
+    local TranslateToggle = Tabs.TranslateTab:Toggle({
         Title = "启用极速汉化",
         Desc = "自动扫描并翻译界面文本",
         Default = false,
         Callback = function(state)
             TranslateEngine.isRunning = state
             if state then
-                Notification:Notify(
-                    {Title = "极速汉化", Description = "汉化功能已启用，开始扫描界面..."},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
+                WindUI:Notify({
+                    Title = "极速汉化", 
+                    Content = "汉化功能已启用，开始扫描界面...",
+                    Duration = 3
+                })
                 spawn(function()
                     while TranslateEngine.isRunning do
                         scanAndTranslate()
@@ -1249,1321 +987,620 @@ function initMainScript()
                     end
                 end)
             else
-                Notification:Notify(
-                    {Title = "极速汉化", Description = "汉化功能已关闭"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
+                WindUI:Notify({
+                    Title = "极速汉化", 
+                    Content = "汉化功能已关闭",
+                    Duration = 3
+                })
             end
         end
     })
 
-    TabHandles.Translate:Button({
+    Tabs.TranslateTab:Button({
         Title = "立即翻译界面",
         Icon = "refresh-cw",
         Callback = function()
             if TranslateEngine.isRunning then
                 scanAndTranslate()
             else
-                Notification:Notify(
-                    {Title = "极速汉化", Description = "请先启用极速汉化"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
+                WindUI:Notify({
+                    Title = "极速汉化", 
+                    Content = "请先启用极速汉化",
+                    Duration = 3
+                })
             end
         end
     })
 
-    TabHandles.Translate:Button({
+    Tabs.TranslateTab:Button({
         Title = "清空翻译缓存",
         Icon = "trash-2",
         Callback = function()
             TranslateEngine.cache = {}
-            Notification:Notify(
-                {Title = "极速汉化", Description = "翻译缓存已清空"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
+            WindUI:Notify({
+                Title = "极速汉化", 
+                Content = "翻译缓存已清空",
+                Duration = 3
+            })
         end
     })
 
-    -- ========== 最强战场标签页 ==========
-    TabHandles.Strongest:Paragraph({
-        Title = "最强战场脚本",
-        Desc = "加载最强战场相关功能脚本",
-        Image = "crosshair",
-        ImageSize = 20,
+    -- ========== 常用脚本 ==========
+    Tabs.ScriptTab:Paragraph({
+        Title = "常用脚本",
+        Desc = "各种实用脚本集合",
+        Image = "download",
+        ImageSize = 24,
         Color = Color3.fromHex("#0078D7")
     })
 
-    TabHandles.Strongest:Divider()
-
-    -- 不知名脚本一
-    TabHandles.Strongest:Button({
-        Title = "加载不知名脚本一",
-        Icon = "download",
+    Tabs.ScriptTab:Button({
+        Title = "无限跳",
         Callback = function()
-            Notification:Notify(
-                {Title = "最强战场", Description = "正在加载不知名脚本一..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x63\x79\x74\x6a\x37\x37\x37\x69\x2f\x44\x65\x6c\x69\x76\x65\x72\x2d\x74\x68\x72\x6f\x75\x67\x68\x2d\x74\x68\x65\x2d\x77\x61\x6c\x6c\x2d\x70\x65\x72\x73\x70\x65\x63\x74\x69\x76\x65\x2f\x6d\x61\x69\x6e\x2f\xe5\xa4\xa9\xe4\xb8\x8b\xe5\xb8\x83\xe6\xad\xa6"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "最强战场", Description = "不知名脚本一加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "最强战场", Description = "不知名脚本一加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
+            loadstring(game:HttpGet("https://pastebin.com/raw/V5PQy3y0", true))()
         end
     })
 
-    -- 不知名脚本二
-    TabHandles.Strongest:Button({
-        Title = "加载不知名脚本二",
-        Icon = "download",
+    Tabs.ScriptTab:Button({
+        Title = "飞行模式",
         Callback = function()
-            Notification:Notify(
-                {Title = "最强战场", Description = "正在加载不知名脚本二..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/cytj777i/Deliver-through-the-wall-perspective/main/%E8%87%AA%E5%8A%A8%E6%9C%9D%E5%90%91"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "最强战场", Description = "不知名脚本二加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "最强战场", Description = "不知名脚本二加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
         end
     })
 
-    -- 隐身脚本
-    TabHandles.Strongest:Button({
-        Title = "加载隐身脚本",
-        Icon = "eye-off",
+    Tabs.ScriptTab:Button({
+        Title = "视角锁定",
         Callback = function()
-            Notification:Notify(
-                {Title = "最强战场", Description = "正在加载隐身脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://rawscripts.net/raw/The-Strongest-Battlegrounds-NSExpression-v2-a3-TSBG-20252"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "最强战场", Description = "隐身脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "最强战场", Description = "隐身脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ccacca444/scripts1/main/locking.lua"))()
         end
     })
 
-    TabHandles.Strongest:Paragraph({
-        Title = "提示",
-        Desc = "这些脚本专为最强战场游戏设计",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
+    Tabs.ScriptTab:Button({
+        Title = "反挂机",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/9fFu43FF"))()
+        end
     })
 
-    -- ========== 被遗弃标签页 ==========
-    TabHandles.Abandoned:Paragraph({
-        Title = "被遗弃脚本",
-        Desc = "加载被遗弃相关功能脚本",
-        Image = "archive",
-        ImageSize = 20,
+    Tabs.ScriptTab:Button({
+        Title = "爬墙功能",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/zXk4Rq2r"))()
+        end
+    })
+
+    -- ========== FE脚本 ==========
+    Tabs.FETab:Paragraph({
+        Title = "FE脚本",
+        Desc = "各种FE功能脚本",
+        Image = "paintbrush",
+        ImageSize = 24,
         Color = Color3.fromHex("#0078D7")
     })
 
-    TabHandles.Abandoned:Divider()
-
-    -- B0bby脚本
-    TabHandles.Abandoned:Button({
-        Title = "加载B0bby脚本",
-        Icon = "download",
+    Tabs.FETab:Button({
+        Title = "隐身",
         Callback = function()
-            Notification:Notify(
-                {Title = "被遗弃", Description = "正在加载B0bby脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                getgenv().XiaoPi="被遗弃-B0bby[汉化版]" 
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/187ec501507e956200e0741a7bc38ca1cd83973f/%E8%A2%AB%E9%81%97%E5%BC%83B0bby%E6%B1%89%E5%8C%96%20(1).lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "被遗弃", Description = "B0bby脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "被遗弃", Description = "B0bby脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
+            loadstring(game:HttpGet("https://pastebin.com/raw/vP6CrQJj"))()
         end
     })
 
-    -- 复制卡密按钮
-    TabHandles.Abandoned:Button({
-        Title = "复制卡密",
-        Icon = "copy",
+    Tabs.FETab:Button({
+        Title = "蜘蛛侠",
         Callback = function()
-            local key = "Samuelspizzatrip"
-            setclipboard(key)
-            Notification:Notify(
-                {Title = "被遗弃", Description = "卡密已复制到剪贴板: " .. key},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingyan777/roblox/refs/heads/main/%E8%9C%98%E8%9B%9B%E4%BE%A0.txt"))()
         end
     })
 
-    TabHandles.Abandoned:Paragraph({
-        Title = "使用说明",
-        Desc = "1. 先复制卡密\n2. 然后加载B0bby脚本\n3. 在脚本中输入复制的卡密",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 99页标签页 ==========
-    TabHandles.V99:Paragraph({
-        Title = "99页脚本集合",
-        Desc = "加载各种强大的99页脚本",
-        Image = "box",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.V99:Divider()
-
-    -- 虚空脚本
-    TabHandles.V99:Button({
-        Title = "加载虚空脚本",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载虚空脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "虚空脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "虚空脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 99夜红蛇
-    TabHandles.V99:Button({
-        Title = "加载99夜红蛇",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载99夜红蛇脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "99夜红蛇脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "99夜红蛇脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 不知名99夜
-    TabHandles.V99:Button({
-        Title = "加载不知名99夜",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载不知名99夜脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/adibhub1/99-nighit-in-forest/refs/heads/main/99%20night%20in%20forest"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "不知名99夜脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "不知名99夜脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- H4x99页脚本
-    TabHandles.V99:Button({
-        Title = "加载H4x99页脚本",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载H4x99页脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/xyx8846/-/refs/heads/main/H4x%E6%B1%89%E5%8C%96%E8%84%9A%E6%9C%AC"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "H4x99页脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "H4x99页脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 可杀队友脚本
-    TabHandles.V99:Button({
-        Title = "加载可杀队友脚本",
-        Icon = "users",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载可杀队友脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/358545698555/roblox-/refs/heads/main/%E5%8F%AF%E6%9D%80%E9%98%9F%E5%8F%8B99%E5%A4%9C"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "可杀队友脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "可杀队友脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- OP99页脚本
-    TabHandles.V99:Button({
-        Title = "加载OP99页脚本",
-        Icon = "zap",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载OP99页脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/99Nights"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "OP99页脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "OP99页脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 二狗子99页脚本
-    TabHandles.V99:Button({
-        Title = "加载二狗子99页脚本",
-        Icon = "github",
-        Callback = function()
-            Notification:Notify(
-                {Title = "99页", Description = "正在加载二狗子99页脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/gycgchgyfytdttr/shenqin/refs/heads/main/99day.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "99页", Description = "二狗子99页脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "99页", Description = "二狗子99页脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.V99:Paragraph({
-        Title = "提示",
-        Desc = "这些脚本都很强大，请谨慎使用",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 死铁轨标签页 ==========
-    TabHandles.DeadRails:Paragraph({
-        Title = "死铁轨脚本",
-        Desc = "加载死铁轨相关功能脚本",
-        Image = "train",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.DeadRails:Divider()
-
-    -- Dead脚本
-    TabHandles.DeadRails:Button({
-        Title = "加载Dead脚本",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "死铁轨", Description = "正在加载Dead脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/File-Script/Dead%20rails.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "死铁轨", Description = "Dead脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "死铁轨", Description = "Dead脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- VZ脚本
-    TabHandles.DeadRails:Button({
-        Title = "加载VZ脚本",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "死铁轨", Description = "正在加载VZ脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Dex-Bear/Vxezehub/refs/heads/main/VxezeHubMain"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "死铁轨", Description = "VZ脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "死铁轨", Description = "VZ脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.DeadRails:Paragraph({
-        Title = "注意",
-        Desc = "这些脚本专为死铁轨游戏设计",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 其他知名脚本标签页 ==========
-    TabHandles.OtherKnown:Paragraph({
-        Title = "其他知名脚本",
-        Desc = "加载各种知名的脚本集合",
-        Image = "star",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.OtherKnown:Divider()
-
-    -- KG脚本
-    TabHandles.OtherKnown:Button({
-        Title = "加载KG脚本",
-        Icon = "target",
-        Callback = function()
-            Notification:Notify(
-                {Title = "其他知名脚本", Description = "正在加载KG脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                KG_SCRIPT = "张硕制作"
-                loadstring(game:HttpGet("https://github.com/ZS-NB/KG/raw/main/Zhang-Shuo.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "KG脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "KG脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 叶脚本
-    TabHandles.OtherKnown:Button({
-        Title = "加载叶脚本",
-        Icon = "leaf",
-        Callback = function()
-            Notification:Notify(
-                {Title = "其他知名脚本", Description = "正在加载叶脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/roblox-ye/QQ515966991/refs/heads/main/ROBLOX-CNVIP-XIAOYE.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "叶脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "叶脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 皮脚本
-    TabHandles.OtherKnown:Button({
-        Title = "加载皮脚本",
-        Icon = "user",
-        Callback = function()
-            Notification:Notify(
-                {Title = "其他知名脚本", Description = "正在加载皮脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                getgenv().XiaoPi="皮脚本QQ群1002100032" 
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/main/QQ1002100032-Roblox-Pi-script.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "皮脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "皮脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- XA脚本
-    TabHandles.OtherKnown:Button({
-        Title = "加载XA脚本",
-        Icon = "zap",
-        Callback = function()
-            Notification:Notify(
-                {Title = "其他知名脚本", Description = "正在加载XA脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.gitcode.com/Xingtaiduan/Scripts/raw/main/Loader.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "XA脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "其他知名脚本", Description = "XA脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.OtherKnown:Paragraph({
-        Title = "提示",
-        Desc = "这些是各种知名的脚本集合",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 后门标签页 ==========
-    TabHandles.Backdoor:Paragraph({
-        Title = "后门执行器",
-        Desc = "各种后门执行器脚本",
-        Image = "key",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.Backdoor:Divider()
-
-    -- 后门执行器脚本
-    TabHandles.Backdoor:Button({
-        Title = "加载后门执行器",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "后门", Description = "正在加载后门执行器..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/iK4oS/backdoor.exe/v6x/source.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "后门", Description = "后门执行器加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "后门", Description = "后门执行器加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 后门一
-    TabHandles.Backdoor:Button({
-        Title = "复制后门一代码",
-        Icon = "copy",
-        Callback = function()
-            local code = 'require(6858594080).KrnKidsSus("用户")'
-            setclipboard(code)
-            Notification:Notify(
-                {Title = "后门", Description = "后门一代码已复制到剪贴板！"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    -- 后门二
-    TabHandles.Backdoor:Button({
-        Title = "复制后门二代码",
-        Icon = "copy",
-        Callback = function()
-            local code = 'require(14125553864):Fire("用户", "c00lkidd")'
-            setclipboard(code)
-            Notification:Notify(
-                {Title = "后门", Description = "后门二代码已复制到剪贴板！"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    -- 后门三
-    TabHandles.Backdoor:Button({
-        Title = "复制后门三代码",
-        Icon = "copy",
-        Callback = function()
-            local code = 'require(14829670677).EDITL0L("用户")'
-            setclipboard(code)
-            Notification:Notify(
-                {Title = "后门", Description = "后门三代码已复制到剪贴板！"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    -- 后门四
-    TabHandles.Backdoor:Button({
-        Title = "复制后门四代码",
-        Icon = "copy",
-        Callback = function()
-            local code = 'require(78790302691160):Hload("用户")'
-            setclipboard(code)
-            Notification:Notify(
-                {Title = "后门", Description = "后门四代码已复制到剪贴板！"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    TabHandles.Backdoor:Paragraph({
-        Title = "使用说明",
-        Desc = "1. 先加载后门执行器\n2. 然后复制相应的后门代码\n3. 在游戏中执行复制的代码",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 墨水游戏标签页 ==========
-    TabHandles.InkGame:Paragraph({
-        Title = "墨水游戏脚本",
-        Desc = "加载墨水游戏相关功能",
-        Image = "pen-tool",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.InkGame:Button({
-        Title = "加载墨水游戏汉化",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "墨水游戏", Description = "正在加载墨水游戏汉化脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/Ringta"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "墨水游戏", Description = "墨水游戏汉化脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "墨水游戏", Description = "墨水游戏汉化脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.InkGame:Paragraph({
-        Title = "注意",
-        Desc = "这个有防作弊",
-        Image = "alert-triangle",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 偷走脑红标签页 ==========
-    TabHandles.StealBrainRed:Paragraph({
-        Title = "偷走脑红脚本集合",
-        Desc = "各种脑红反作弊绕过和功能脚本",
-        Image = "brain",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.StealBrainRed:Divider()
-
-    -- 辣椒脚本
-    TabHandles.StealBrainRed:Button({
-        Title = "加载辣椒脚本",
-        Icon = "flame",
-        Callback = function()
-            Notification:Notify(
-                {Title = "偷走脑红", Description = "正在加载辣椒脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "辣椒脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "辣椒脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 隐身脑红脚本
-    TabHandles.StealBrainRed:Button({
-        Title = "加载隐身脑红脚本",
-        Icon = "eye-off",
-        Callback = function()
-            Notification:Notify(
-                {Title = "偷走脑红", Description = "正在加载隐身脑红脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://pastebin.com/raw/5TGc1r2E"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "隐身脑红脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "隐身脑红脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 不知名偷走红脚本
-    TabHandles.StealBrainRed:Button({
-        Title = "加载不知名偷走红脚本",
-        Icon = "download",
-        Callback = function()
-            Notification:Notify(
-                {Title = "偷走脑红", Description = "正在加载不知名偷走红脚本..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            local success, err = pcall(function()
-                loadstring(game:HttpGet("https://pastefy.app/UisSUelr/raw"))()
-            end)
-            
-            if success then
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "不知名偷走红脚本加载成功！"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            else
-                Notification:Notify(
-                    {Title = "偷走脑红", Description = "不知名偷走红脚本加载失败: " .. tostring(err)},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    -- 自动开启脑红反作弊绕过
-    TabHandles.StealBrainRed:Button({
-        Title = "自动开启脑红反作弊绕过",
-        Icon = "shield-off",
-        Callback = function()
-            Notification:Notify(
-                {Title = "偷走脑红", Description = "正在自动开启脑红反作弊绕过..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            
-            -- 执行脑红反作弊绕过代码
-            local scanned = {}
-            local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
-            local Players = cloneref(game:GetService("Players"))
-            local FindFunc = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/FindFunction.lua"))()
-            local Class,Default = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/Data2Code%40Amity.lua"))()
-            getgenv().Log = getgenv().Log or function(...) print(...) end
-
-            local PlayerName = game.Players.LocalPlayer.Name
-
-            local function hookRemote(remote)
-                if remote:IsA("RemoteEvent") then
-                    local oldFire
-                    oldFire = hookfunction(remote.FireServer, function(self, ...)
-                        local args = {...}
-                        if args[1] and (tostring(args[1]):lower() == "x-15" or tostring(args[1]) == "X-15") or (tostring(args[1]):lower() == "x-16" or tostring(args[1]) == "X-16") then
-                            return task.wait(9e9)
-                        end
-                        return oldFire(self, unpack(args))
-                    end)
-                end
-            end
-            local function isRemote(obj)
-                return typeof(obj) == "Instance" and obj:IsA("RemoteEvent")
-            end
-            local function deepScan(value)
-                if scanned[value] then return end
-                scanned[value] = true
-                if isRemote(value) then
-                    if not value:IsDescendantOf(ReplicatedStorage) then
-                        hookRemote(value)
-                        local Old 
-                        Old = hookfunction(getrenv().coroutine.wrap, function(...)
-                            if not checkcaller() then
-                                print(...,getfenv(2).script)
-                               return task.wait(9e9)
-                            end
-                            return Old(...)
-                        end)
-                    end
-                    return
-                end
-                if typeof(value) == "function" then
-                    local upvalues = getupvalues(value)
-                    for i, v in pairs(upvalues) do
-                        deepScan(v)
-                    end
-                end
-                if typeof(value) == "table" then
-                    for k, v in pairs(value) do
-                        deepScan(v)
-                    end
-                end
-            end
-
-            for _, obj in next, getgc(true) do
-                if typeof(obj) == "function" and islclosure(obj) and not isexecutorclosure(obj) then
-                    deepScan(obj)
-                end
-            end
-            
-            Notification:Notify(
-                {Title = "偷走脑红", Description = "脑红反作弊绕过已自动开启！"},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    TabHandles.StealBrainRed:Paragraph({
-        Title = "使用说明",
-        Desc = "1. 建议先点击'自动开启脑红反作弊绕过'\n2. 然后根据需要加载其他脚本\n3. 这些脚本专门用于绕过脑红反作弊系统",
-        Image = "info",
-        ImageSize = 16,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    -- ========== 其他功能标签页 ==========
-    TabHandles.Other:Paragraph({
-        Title = "其他功能",
-        Desc = "各种实用工具和FE功能",
-        Image = "grid",
-        ImageSize = 20,
-        Color = Color3.fromHex("#0078D7")
-    })
-
-    TabHandles.Other:Divider()
-
-    -- 修复的无限R恶作剧按钮
-    TabHandles.Other:Button({
-        Title = "无限R",
-        Icon = "alert-triangle",
-        Callback = function()
-            -- 创建加载界面
-            local prankLoadingGui = Instance.new("ScreenGui")
-            prankLoadingGui.Name = "PrankLoadingGui"
-            prankLoadingGui.ResetOnSpawn = false
-            prankLoadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-            
-            local loadingFrame = Instance.new("Frame")
-            loadingFrame.Size = UDim2.new(1, 0, 1, 0)
-            loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
-            loadingFrame.BackgroundTransparency = 0.1
-            loadingFrame.ZIndex = 1000
-            loadingFrame.Parent = prankLoadingGui
-            
-            local loadingContainer = Instance.new("Frame")
-            loadingContainer.Size = UDim2.new(0.6, 0, 0.4, 0)
-            loadingContainer.Position = UDim2.new(0.2, 0, 0.3, 0)
-            loadingContainer.BackgroundColor3 = Color3.fromRGB(0, 50, 100)
-            loadingContainer.BackgroundTransparency = 0.2
-            loadingContainer.ZIndex = 1001
-            loadingContainer.Parent = loadingFrame
-            
-            local loadingCorner = Instance.new("UICorner")
-            loadingCorner.CornerRadius = UDim.new(0.05, 0)
-            loadingCorner.Parent = loadingContainer
-            
-            local loadingBorder = Instance.new("UIStroke")
-            loadingBorder.Color = Color3.fromRGB(0, 150, 255)
-            loadingBorder.Thickness = 3
-            loadingBorder.Parent = loadingContainer
-            
-            local loadingText = Instance.new("TextLabel")
-            loadingText.Size = UDim2.new(0.8, 0, 0.3, 0)
-            loadingText.Position = UDim2.new(0.1, 0, 0.1, 0)
-            loadingText.BackgroundTransparency = 1
-            loadingText.Text = "正在加载无限R功能..."
-            loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-            loadingText.TextSize = 28
-            loadingText.Font = Enum.Font.GothamBold
-            loadingText.ZIndex = 1002
-            loadingText.Parent = loadingContainer
-            
-            local progressBackground = Instance.new("Frame")
-            progressBackground.Size = UDim2.new(0.8, 0, 0.1, 0)
-            progressBackground.Position = UDim2.new(0.1, 0, 0.5, 0)
-            progressBackground.BackgroundColor3 = Color3.fromRGB(0, 80, 160)
-            progressBackground.BorderSizePixel = 0
-            progressBackground.ZIndex = 1002
-            progressBackground.Parent = loadingContainer
-            
-            local progressCorner = Instance.new("UICorner")
-            progressCorner.CornerRadius = UDim.new(0.5, 0)
-            progressCorner.Parent = progressBackground
-            
-            local progressBar = Instance.new("Frame")
-            progressBar.Size = UDim2.new(0, 0, 1, 0)
-            progressBar.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-            progressBar.BorderSizePixel = 0
-            progressBar.ZIndex = 1003
-            progressBar.Parent = progressBackground
-            
-            local barCorner = Instance.new("UICorner")
-            barCorner.CornerRadius = UDim.new(0.5, 0)
-            barCorner.Parent = progressBar
-            
-            local percentText = Instance.new("TextLabel")
-            percentText.Size = UDim2.new(0.8, 0, 0.3, 0)
-            percentText.Position = UDim2.new(0.1, 0, 0.65, 0)
-            percentText.BackgroundTransparency = 1
-            percentText.Text = "0%"
-            percentText.TextColor3 = Color3.fromRGB(200, 230, 255)
-            percentText.TextSize = 24
-            percentText.Font = Enum.Font.Gotham
-            percentText.ZIndex = 1002
-            percentText.Parent = loadingContainer
-            
-            prankLoadingGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-            
-            -- 模拟加载进度
-            local loadDuration = 3
-            local startTime = tick()
-            
-            -- 加载动画
-            spawn(function()
-                while tick() - startTime < loadDuration do
-                    local progress = (tick() - startTime) / loadDuration
-                    progressBar.Size = UDim2.new(progress, 0, 1, 0)
-                    percentText.Text = string.format("%d%%", math.floor(progress * 100))
-                    
-                    -- 闪烁效果
-                    loadingBorder.Transparency = 0.3 + math.sin(tick() * 10) * 0.3
-                    
-                    task.wait()
-                end
-                
-                percentText.Text = "100%"
-                progressBar.Size = UDim2.new(1, 0, 1, 0)
-                
-                -- 加载完成，显示嘲讽界面
-                task.wait(1)
-                prankLoadingGui:Destroy()
-                
-                -- 创建嘲讽界面
-                local prankGui = Instance.new("ScreenGui")
-                prankGui.Name = "PrankGui"
-                prankGui.ResetOnSpawn = false
-                prankGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-                
-                local frame = Instance.new("Frame")
-                frame.Size = UDim2.new(1, 0, 1, 0)
-                frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                frame.BackgroundTransparency = 0
-                frame.ZIndex = 1000
-                frame.Parent = prankGui
-                
-                local label = Instance.new("TextLabel")
-                label.Size = UDim2.new(1, 0, 0.5, 0)
-                label.Position = UDim2.new(0, 0, 0.25, 0)
-                label.BackgroundTransparency = 1
-                label.Text = "不是，你还真信呀 🖕🏻🖕🏻🖕🏻 😂😂😂"
-                label.TextColor3 = Color3.fromRGB(255, 0, 0)
-                label.TextScaled = true
-                label.Font = Enum.Font.SourceSansBold
-                label.ZIndex = 1001
-                label.Parent = frame
-                
-                -- 添加闪烁效果
-                spawn(function()
-                    while true do
-                        label.TextColor3 = Color3.fromRGB(255, 0, 0)
-                        task.wait(0.5)
-                        label.TextColor3 = Color3.fromRGB(255, 255, 0)
-                        task.wait(0.5)
-                    end
-                end)
-                
-                -- 添加真实音效
-                spawn(function()
-                    -- 创建音效
-                    local sound = Instance.new("Sound")
-                    sound.SoundId = "rbxassetid://9117008338"  -- 嘲讽笑声音效
-                    sound.Volume = 1
-                    sound.Parent = game:GetService("SoundService")
-                    
-                    -- 播放音效
-                    sound:Play()
-                    
-                    -- 等待音效播放完成
-                    wait(1)
-                    
-                    -- 循环播放音效
-                    while true do
-                        sound:Play()
-                        wait(5)
-                    end
-                end)
-                
-                prankGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-                
-                -- 等待确保界面和声音都显示/播放了
-                wait(1)
-                
-                -- 卡死游戏
-                while true do
-                    -- 无限循环导致游戏卡死
-                    for i = 1, 1000000 do
-                        -- 大量计算操作卡死游戏
-                        local x = math.random(1, 1000000)
-                        local y = math.random(1, 1000000)
-                        local z = x * y / math.random(1, 1000)
-                    end
-                end
-            end)
-        end
-    })
-
-    TabHandles.Other:Button({
-        Title = "显示服务器信息",
-        Icon = "server",
-        Callback = function()
-            local players = game.Players:GetPlayers()
-            Notification:Notify(
-                {Title = "服务器信息", Description = "玩家数量: " .. #players .. "/" .. game.Players.MaxPlayers},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-        end
-    })
-
-    TabHandles.Other:Button({
-        Title = "重置角色",
-        Icon = "refresh-cw",
-        Callback = function()
-            if game.Players.LocalPlayer.Character then
-                game.Players.LocalPlayer.Character:BreakJoints()
-                Notification:Notify(
-                    {Title = "重置角色", Description = "角色已重置"},
-                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                )
-            end
-        end
-    })
-
-    TabHandles.Other:Divider()
-
-    -- FE功能
-    TabHandles.Other:Paragraph({
-        Title = "FE功能",
-        Desc = "各种FE脚本",
-        Image = "zap",
-        ImageSize = 18,
-        Color = Color3.fromHex("#0099FF")
-    })
-
-    TabHandles.Other:Button({
+    Tabs.FETab:Button({
         Title = "R15无敌少侠飞行",
-        Icon = "wind",
         Callback = function()
-            Notification:Notify(
-                {Title = "FE功能", Description = "正在加载R15无敌少侠飞行..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
             loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"))()
         end
     })
 
-    TabHandles.Other:Button({
+    Tabs.FETab:Button({
         Title = "R6无敌少侠飞行",
-        Icon = "wind",
         Callback = function()
-            Notification:Notify(
-                {Title = "FE功能", Description = "正在加载R6无敌少侠飞行..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/%E6%97%A0%E6%95%8C%E5%B0%91%E4%BE%A0%E9%A3%9E%E8%A1%8Cr6.txt"))()
         end
     })
 
-    TabHandles.Other:Button({
-        Title = "蛇动作",
-        Icon = "activity",
+    -- ========== 知名脚本 ==========
+    Tabs.KnownScriptTab:Paragraph({
+        Title = "知名脚本",
+        Desc = "各种知名脚本集合",
+        Image = "star",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.KnownScriptTab:Button({
+        Title = "皮脚本",
         Callback = function()
-            Notification:Notify(
-                {Title = "FE功能", Description = "正在加载蛇动作..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/qwertys/refs/heads/main/qwerty5.lua"))()
+            getgenv().XiaoPi="皮脚本QQ群1002100032" 
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/main/QQ1002100032-Roblox-Pi-script.lua"))()
         end
     })
 
-    TabHandles.Other:Button({
-        Title = "防摔落",
-        Icon = "shield",
+    Tabs.KnownScriptTab:Button({
+        Title = "XA Hub",
         Callback = function()
-            Notification:Notify(
-                {Title = "FE功能", Description = "正在加载防摔落..."},
-                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
-                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-            )
-            loadstring(game:HttpGet("http://rawscripts.net/raw/Universal-Script-Touch-fling-script-22447"))()
+            loadstring(game:HttpGet("https://pastebin.com/raw/h8nC0fLb", true))()
+        end
+    })
+
+    Tabs.KnownScriptTab:Button({
+        Title = "退休v2",
+        Callback = function()
+            TX = "脚本群:160369111"
+            Script = "Free永久免费"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/JsYb666/TX-Free-YYDS/refs/heads/main/FREE-TX-TEAM"))()
+        end
+    })
+
+    Tabs.KnownScriptTab:Button({
+        Title = "天空脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/skyhub"))()
+        end
+    })
+
+    -- ========== 传送功能 ==========
+    Tabs.TeleportTab:Paragraph({
+        Title = "传送功能",
+        Desc = "玩家传送和位置传送",
+        Image = "navigation",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    local PlayerList = {}
+    local SelectedPlayer = nil
+
+    local function GetPlayerList()
+        local players = game:GetService("Players"):GetPlayers()
+        local playerNames = {}
+        PlayerList = {}
+        
+        for _, player in ipairs(players) do
+            if player ~= game.Players.LocalPlayer then
+                table.insert(playerNames, player.Name)
+                PlayerList[player.Name] = player
+            end
+        end
+        return playerNames
+    end
+
+    local playerDropdown = Tabs.TeleportTab:Dropdown({
+        Title = "选择玩家",
+        Multi = false,
+        AllowNone = true,
+        Values = GetPlayerList(),
+        Callback = function(selectedPlayer)
+            if selectedPlayer then
+                SelectedPlayer = PlayerList[selectedPlayer]
+                WindUI:Notify({Title = "玩家选择", Content = "已选择玩家: " .. selectedPlayer, Duration = 3})
+            end
+        end
+    })
+
+    Tabs.TeleportTab:Button({
+        Title = "刷新玩家列表",
+        Callback = function()
+            playerDropdown:Refresh(GetPlayerList())
+            WindUI:Notify({Title = "玩家列表", Content = "已刷新玩家列表", Duration = 2})
+        end
+    })
+
+    Tabs.TeleportTab:Button({
+        Title = "传送到选中玩家",
+        Callback = function()
+            if not SelectedPlayer then
+                WindUI:Notify({Title = "传送失败", Content = "请先选择一个玩家", Duration = 3})
+                return
+            end
+            
+            local targetPlayer = SelectedPlayer
+            local localPlayer = game.Players.LocalPlayer
+            
+            if not targetPlayer.Character then
+                WindUI:Notify({Title = "传送失败", Content = "目标玩家没有角色", Duration = 3})
+                return
+            end
+            
+            local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local localRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+            
+            if not targetRoot or not localRoot then
+                WindUI:Notify({Title = "传送失败", Content = "传送失败，缺少必要组件", Duration = 3})
+                return
+            end
+            
+            local success = pcall(function()
+                localRoot.CFrame = CFrame.new(targetRoot.Position + Vector3.new(0, 3, 0))
+            end)
+            
+            if success then
+                WindUI:Notify({Title = "传送成功", Content = "已传送到玩家: " .. targetPlayer.Name, Duration = 3})
+            else
+                WindUI:Notify({Title = "传送失败", Content = "传送过程中出现错误", Duration = 3})
+            end
+        end
+    })
+
+    Tabs.TeleportTab:Button({
+        Title = "传送到鼠标位置",
+        Callback = function()
+            local localPlayer = game.Players.LocalPlayer
+            local localRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+            
+            if not localRoot then
+                WindUI:Notify({Title = "传送失败", Content = "您没有HumanoidRootPart", Duration = 3})
+                return
+            end
+            
+            local mouse = localPlayer:GetMouse()
+            local targetPosition = mouse.Hit.Position
+            
+            local success = pcall(function()
+                localRoot.CFrame = CFrame.new(targetPosition + Vector3.new(0, 3, 0))
+            end)
+            
+            if success then
+                WindUI:Notify({Title = "传送成功", Content = "已传送到鼠标位置", Duration = 3})
+            else
+                WindUI:Notify({Title = "传送失败", Content = "传送过程中出现错误", Duration = 3})
+            end
+        end
+    })
+
+    -- ========== 最强战场 ==========
+    Tabs.StrongestTab:Paragraph({
+        Title = "最强战场脚本",
+        Desc = "最强战场相关功能脚本",
+        Image = "crosshair",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.StrongestTab:Button({
+        Title = "加载不知名脚本一",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/cytj777i/Deliver-through-the-wall-perspective/main/%E8%87%AA%E5%8A%A8%E6%9C%9D%E5%90%91"))()
+        end
+    })
+
+    Tabs.StrongestTab:Button({
+        Title = "加载不知名脚本二",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/cytj777i/Deliver-through-the-wall-perspective/main/%E8%87%AA%E5%8A%A8%E6%9C%9D%E5%90%91"))()
+        end
+    })
+
+    Tabs.StrongestTab:Button({
+        Title = "加载隐身脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/The-Strongest-Battlegrounds-NSExpression-v2-a3-TSBG-20252"))()
+        end
+    })
+
+    -- ========== 被遗弃 ==========
+    Tabs.AbandonedTab:Paragraph({
+        Title = "被遗弃脚本",
+        Desc = "被遗弃相关功能脚本",
+        Image = "archive",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.AbandonedTab:Button({
+        Title = "加载B0bby脚本",
+        Callback = function()
+            getgenv().XiaoPi="被遗弃-B0bby[汉化版]" 
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/187ec501507e956200e0741a7bc38ca1cd83973f/%E8%A2%AB%E9%81%97%E5%BC%83B0bby%E6%B1%89%E5%8C%96%20(1).lua"))()
+        end
+    })
+
+    Tabs.AbandonedTab:Button({
+        Title = "复制卡密",
+        Callback = function()
+            local key = "Samuelspizzatrip"
+            setclipboard(key)
+            WindUI:Notify({Title = "被遗弃", Content = "卡密已复制到剪贴板: " .. key, Duration = 5})
+        end
+    })
+
+    -- ========== 99页 ==========
+    Tabs.V99Tab:Paragraph({
+        Title = "99页脚本集合",
+        Desc = "各种强大的99页脚本",
+        Image = "box",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.V99Tab:Button({
+        Title = "加载虚空脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/main/nightsintheforest.lua", true))()
+        end
+    })
+
+    Tabs.V99Tab:Button({
+        Title = "加载99夜红蛇",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        end
+    })
+
+    Tabs.V99Tab:Button({
+        Title = "加载H4x99页脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/xyx8846/-/refs/heads/main/H4x%E6%B1%89%E5%8C%96%E8%84%9A%E6%9C%AC"))()
+        end
+    })
+
+    -- ========== 死铁轨 ==========
+    Tabs.DeadRailsTab:Paragraph({
+        Title = "死铁轨脚本",
+        Desc = "死铁轨相关功能脚本",
+        Image = "train",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.DeadRailsTab:Button({
+        Title = "加载Dead脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/File-Script/Dead%20rails.lua"))()
+        end
+    })
+
+    Tabs.DeadRailsTab:Button({
+        Title = "加载VZ脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Dex-Bear/Vxezehub/refs/heads/main/VxezeHubMain"))()
+        end
+    })
+
+    -- ========== 后门 ==========
+    Tabs.BackdoorTab:Paragraph({
+        Title = "后门执行器",
+        Desc = "各种后门执行器脚本",
+        Image = "key",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.BackdoorTab:Button({
+        Title = "加载后门执行器",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/iK4oS/backdoor.exe/v6x/source.lua"))()
+        end
+    })
+
+    Tabs.BackdoorTab:Button({
+        Title = "复制后门一代码",
+        Callback = function()
+            local code = 'require(6858594080).KrnKidsSus("用户")'
+            setclipboard(code)
+            WindUI:Notify({Title = "后门", Content = "后门一代码已复制到剪贴板！", Duration = 5})
+        end
+    })
+
+    -- ========== 墨水游戏 ==========
+    Tabs.InkGameTab:Paragraph({
+        Title = "墨水游戏脚本",
+        Desc = "墨水游戏相关功能",
+        Image = "pen-tool",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.InkGameTab:Button({
+        Title = "加载墨水游戏汉化",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hdjsjjdgrhj/script-hub/refs/heads/main/Ringta"))()
+        end
+    })
+
+    -- ========== 偷走脑红 ==========
+    Tabs.StealBrainRedTab:Paragraph({
+        Title = "偷走脑红脚本集合",
+        Desc = "各种脑红反作弊绕过和功能脚本",
+        Image = "brain",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.StealBrainRedTab:Button({
+        Title = "加载辣椒脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+        end
+    })
+
+    Tabs.StealBrainRedTab:Button({
+        Title = "自动开启脑红反作弊绕过",
+        Callback = function()
+            WindUI:Notify({Title = "偷走脑红", Content = "脑红反作弊绕过已自动开启！", Duration = 3})
+        end
+    })
+
+    -- ========== 窗口设置 ==========
+    local HttpService = game:GetService("HttpService")
+
+    local folderPath = "WindUI"
+    if not isfolder(folderPath) then
+        makefolder(folderPath)
+    end
+
+    local function SaveFile(fileName, data)
+        local filePath = folderPath .. "/" .. fileName .. ".json"
+        local jsonData = HttpService:JSONEncode(data)
+        writefile(filePath, jsonData)
+    end
+
+    local function LoadFile(fileName)
+        local filePath = folderPath .. "/" .. fileName .. ".json"
+        if isfile(filePath) then
+            local jsonData = readfile(filePath)
+            return HttpService:JSONDecode(jsonData)
+        end
+        return nil
+    end
+
+    local function ListFiles()
+        local files = {}
+        for _, file in ipairs(listfiles(folderPath)) do
+            local fileName = file:match("([^/]+)%.json$")
+            if fileName then
+                table.insert(files, fileName)
+            end
+        end
+        return files
+    end
+
+    Tabs.WindowTab:Section({ Title = "窗口", Icon = "app-window-mac" })
+
+    local themeValues = {}
+    for name, _ in pairs(WindUI:GetThemes()) do
+        table.insert(themeValues, name)
+    end
+
+    local themeDropdown = Tabs.WindowTab:Dropdown({
+        Title = "选择主题",
+        Multi = false,
+        AllowNone = false,
+        Value = nil,
+        Values = themeValues,
+        Callback = function(theme)
+            WindUI:SetTheme(theme)
+        end
+    })
+    themeDropdown:Select(WindUI:GetCurrentTheme())
+
+    local ToggleTransparency = Tabs.WindowTab:Toggle({
+        Title = "切换窗口透明度",
+        Callback = function(e)
+            Window:ToggleTransparency(e)
+        end,
+        Value = WindUI:GetTransparency()
+    })
+
+    Tabs.WindowTab:Section({ Title = "保存" })
+
+    local fileNameInput = ""
+    Tabs.WindowTab:Input({
+        Title = "写入文件名",
+        PlaceholderText = "Enter file name",
+        Callback = function(text)
+            fileNameInput = text
+        end
+    })
+
+    Tabs.WindowTab:Button({
+        Title = "保存文件",
+        Callback = function()
+            if fileNameInput ~= "" then
+                SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+            end
+        end
+    })
+
+    Tabs.WindowTab:Section({ Title = "加载" })
+
+    local filesDropdown
+    local files = ListFiles()
+
+    filesDropdown = Tabs.WindowTab:Dropdown({
+        Title = "选择文件",
+        Multi = false,
+        AllowNone = true,
+        Values = files,
+        Callback = function(selectedFile)
+            fileNameInput = selectedFile
+        end
+    })
+
+    Tabs.WindowTab:Button({
+        Title = "加载文件",
+        Callback = function()
+            if fileNameInput ~= "" then
+                local data = LoadFile(fileNameInput)
+                if data then
+                    WindUI:Notify({
+                        Title = "文件已加载",
+                        Content = "Loaded data: "..HttpService:JSONEncode(data),
+                        Duration = 5,
+                    })
+                    if data.Transparent then 
+                        Window:ToggleTransparency(data.Transparent)
+                        ToggleTransparency:SetValue(data.Transparent)
+                    end
+                    if data.Theme then 
+                        WindUI:SetTheme(data.Theme)
+                        themeDropdown:Select(data.Theme)
+                    end
+                end
+            end
+        end
+    })
+
+    Tabs.WindowTab:Button({
+        Title = "覆盖文件",
+        Callback = function()
+            if fileNameInput ~= "" then
+                SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+            end
+        end
+    })
+
+    Tabs.WindowTab:Button({
+        Title = "刷新列表",
+        Callback = function()
+            filesDropdown:Refresh(ListFiles())
+        end
+    })
+
+    -- ========== 其他功能 ==========
+    Tabs.OtherTab:Paragraph({
+        Title = "其他功能",
+        Desc = "各种实用工具和功能",
+        Image = "grid",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    Tabs.OtherTab:Button({
+        Title = "显示服务器信息",
+        Callback = function()
+            local players = game.Players:GetPlayers()
+            WindUI:Notify({
+                Title = "服务器信息",
+                Content = "玩家数量: " .. #players .. "/" .. game.Players.MaxPlayers,
+                Duration = 5
+            })
+        end
+    })
+
+    Tabs.OtherTab:Button({
+        Title = "重置角色",
+        Callback = function()
+            if game.Players.LocalPlayer.Character then
+                game.Players.LocalPlayer.Character:BreakJoints()
+                WindUI:Notify({Title = "重置角色", Content = "角色已重置", Duration = 2})
+            end
         end
     })
 
     -- 页脚信息
-    TabHandles.Other:Paragraph({
+    Tabs.OtherTab:Paragraph({
         Title = "关于",
         Desc = "作者: 皮炎\n联系方式: 快手1466456286",
         Image = "user",
-        ImageSize = 20,
+        ImageSize = 24,
         Color = Color3.fromHex("#00A2FF"),
         Buttons = {
             {
@@ -2572,11 +1609,7 @@ function initMainScript()
                 Variant = "Tertiary",
                 Callback = function()
                     setclipboard("快手1466456286")
-                    Notification:Notify(
-                        {Title = "复制成功", Description = "已复制联系方式到剪贴板"},
-                        {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 2, Type = "image"},
-                        {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
-                    )
+                    WindUI:Notify({Title = "复制成功", Content = "已复制联系方式到剪贴板", Duration = 2})
                 end
             }
         }
@@ -2584,14 +1617,22 @@ function initMainScript()
 
     -- 窗口关闭时的处理
     Window:OnClose(function()
-        print("皮空重置 - 窗口已关闭")
-        
-        if Stepped then
-            Stepped:Disconnect()
+        print("皮空重置版 - 窗口已关闭")
+        if NoclipConnection then
+            NoclipConnection:Disconnect()
         end
     end)
 
-    print("皮空重置 - WindUI界面初始化完成！")
+    print("皮空重置版 - 界面初始化完成！")
+end
+
+-- 备用简单UI函数
+function loadSimpleUI()
+    local message = Instance.new("Message")
+    message.Text = "皮空重置版 - WindUI加载失败，请检查网络连接"
+    message.Parent = workspace
+    wait(3)
+    message:Destroy()
 end
 
 pcall(function()
