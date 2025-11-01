@@ -1,3 +1,63 @@
+local scanned = {}
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+local Players = cloneref(game:GetService("Players"))
+local FindFunc = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/FindFunction.lua"))()
+local Class,Default = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/Data2Code%40Amity.lua"))()
+getgenv().Log = getgenv().Log or function(...) print(...) end
+
+local PlayerName = game.Players.LocalPlayer.Name
+
+local function hookRemote(remote)
+    if remote:IsA("RemoteEvent") then
+        local oldFire
+        oldFire = hookfunction(remote.FireServer, function(self, ...)
+            local args = {...}
+            if args[1] and (tostring(args[1]):lower() == "x-15" or tostring(args[1]) == "X-15") or (tostring(args[1]):lower() == "x-16" or tostring(args[1]) == "X-16") then
+                return task.wait(9e9)
+            end
+            return oldFire(self, unpack(args))
+        end)
+    end
+end
+local function isRemote(obj)
+    return typeof(obj) == "Instance" and obj:IsA("RemoteEvent")
+end
+local function deepScan(value)
+    if scanned[value] then return end
+    scanned[value] = true
+    if isRemote(value) then
+        if not value:IsDescendantOf(ReplicatedStorage) then
+            hookRemote(value)
+            local Old 
+            Old = hookfunction(getrenv().coroutine.wrap, function(...)
+                if not checkcaller() then
+                    print(...,getfenv(2).script)
+                   return task.wait(9e9)
+                end
+                return Old(...)
+            end)
+        end
+        return
+    end
+    if typeof(value) == "function" then
+        local upvalues = getupvalues(value)
+        for i, v in pairs(upvalues) do
+            deepScan(v)
+        end
+    end
+    if typeof(value) == "table" then
+        for k, v in pairs(value) do
+            deepScan(v)
+        end
+    end
+end
+
+for _, obj in next, getgc(true) do
+    if typeof(obj) == "function" and islclosure(obj) and not isexecutorclosure(obj) then
+        deepScan(obj)
+    end
+end
+
 -- 加载动画
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -616,7 +676,7 @@ function initMainScript()
     -- 创建各个标签页
     local Tabs = {
         Main = Window:Section({ Title = "主界面", Opened = true }),
-        Core = Window:Section({ Title = "核心功能", Opened = true }),
+        Core = Window:Section({ Title = "通用", Opened = true }),
         Teleport = Window:Section({ Title = "传送功能", Opened = true }),
         Translate = Window:Section({ Title = "极速汉化", Opened = true }),
         Strongest = Window:Section({ Title = "最强战场", Opened = true }),
@@ -626,12 +686,13 @@ function initMainScript()
         OtherKnown = Window:Section({ Title = "其他知名脚本", Opened = true }),
         Backdoor = Window:Section({ Title = "后门", Opened = true }),
         InkGame = Window:Section({ Title = "墨水游戏", Opened = true }),
+        StealBrainRed = Window:Section({ Title = "偷走脑红", Opened = true }),  -- 新增偷走脑红标签页
         Other = Window:Section({ Title = "其他功能", Opened = true })
     }
 
     local TabHandles = {
         Main = Tabs.Main:Tab({ Title = "主界面", Icon = "home" }),
-        Core = Tabs.Core:Tab({ Title = "核心功能", Icon = "zap" }),
+        Core = Tabs.Core:Tab({ Title = "通用功能", Icon = "zap" }),
         Teleport = Tabs.Teleport:Tab({ Title = "传送功能", Icon = "navigation" }),
         Translate = Tabs.Translate:Tab({ Title = "极速汉化", Icon = "languages" }),
         Strongest = Tabs.Strongest:Tab({ Title = "最强战场", Icon = "crosshair" }),
@@ -641,6 +702,7 @@ function initMainScript()
         OtherKnown = Tabs.OtherKnown:Tab({ Title = "其他知名脚本", Icon = "star" }),
         Backdoor = Tabs.Backdoor:Tab({ Title = "后门", Icon = "key" }),
         InkGame = Tabs.InkGame:Tab({ Title = "墨水游戏", Icon = "pen-tool" }),
+        StealBrainRed = Tabs.StealBrainRed:Tab({ Title = "偷走脑红", Icon = "brain" }),  -- 新增偷走脑红标签页
         Other = Tabs.Other:Tab({ Title = "其他功能", Icon = "grid" })
     }
 
@@ -692,9 +754,9 @@ function initMainScript()
         Color = Color3.fromHex("#00A2FF")
     })
 
-    -- ========== 核心功能标签页 ==========
+    -- ========== 通用功能标签页 ==========
     TabHandles.Core:Paragraph({
-        Title = "核心功能",
+        Title = "通用功能",
         Desc = "游戏基础功能修改",
         Image = "zap",
         ImageSize = 20,
@@ -825,11 +887,11 @@ function initMainScript()
     })
 
     TabHandles.Core:Button({
-        Title = "飞行模式",
+        Title = "飞行",
         Icon = "wind",
         Callback = function()
             Notification:Notify(
-                {Title = "飞行模式", Description = "正在加载飞行脚本..."},
+                {Title = "飞行", Description = "正在加载飞行脚本..."},
                 {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
                 {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
             )
@@ -2078,6 +2140,198 @@ function initMainScript()
         Title = "注意",
         Desc = "这个有防作弊",
         Image = "alert-triangle",
+        ImageSize = 16,
+        Color = Color3.fromHex("#0099FF")
+    })
+
+    -- ========== 偷走脑红标签页 ==========
+    TabHandles.StealBrainRed:Paragraph({
+        Title = "偷走脑红脚本集合",
+        Desc = "各种脑红反作弊绕过和功能脚本",
+        Image = "brain",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    TabHandles.StealBrainRed:Divider()
+
+    -- 辣椒脚本
+    TabHandles.StealBrainRed:Button({
+        Title = "加载辣椒脚本",
+        Icon = "flame",
+        Callback = function()
+            Notification:Notify(
+                {Title = "偷走脑红", Description = "正在加载辣椒脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "辣椒脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "辣椒脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 隐身脑红脚本
+    TabHandles.StealBrainRed:Button({
+        Title = "加载隐身脑红脚本",
+        Icon = "eye-off",
+        Callback = function()
+            Notification:Notify(
+                {Title = "偷走脑红", Description = "正在加载隐身脑红脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://pastebin.com/raw/5TGc1r2E"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "隐身脑红脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "隐身脑红脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 不知名偷走红脚本
+    TabHandles.StealBrainRed:Button({
+        Title = "加载不知名偷走红脚本",
+        Icon = "download",
+        Callback = function()
+            Notification:Notify(
+                {Title = "偷走脑红", Description = "正在加载不知名偷走红脚本..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            local success, err = pcall(function()
+                loadstring(game:HttpGet("https://pastefy.app/UisSUelr/raw"))()
+            end)
+            
+            if success then
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "不知名偷走红脚本加载成功！"},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            else
+                Notification:Notify(
+                    {Title = "偷走脑红", Description = "不知名偷走红脚本加载失败: " .. tostring(err)},
+                    {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 5, Type = "image"},
+                    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+                )
+            end
+        end
+    })
+
+    -- 自动开启脑红反作弊绕过
+    TabHandles.StealBrainRed:Button({
+        Title = "自动开启脑红反作弊绕过",
+        Icon = "shield-off",
+        Callback = function()
+            Notification:Notify(
+                {Title = "偷走脑红", Description = "正在自动开启脑红反作弊绕过..."},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+            
+            -- 执行脑红反作弊绕过代码
+            local scanned = {}
+            local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+            local Players = cloneref(game:GetService("Players"))
+            local FindFunc = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/FindFunction.lua"))()
+            local Class,Default = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/GcViewerV2/refs/heads/main/Utility/Data2Code%40Amity.lua"))()
+            getgenv().Log = getgenv().Log or function(...) print(...) end
+
+            local PlayerName = game.Players.LocalPlayer.Name
+
+            local function hookRemote(remote)
+                if remote:IsA("RemoteEvent") then
+                    local oldFire
+                    oldFire = hookfunction(remote.FireServer, function(self, ...)
+                        local args = {...}
+                        if args[1] and (tostring(args[1]):lower() == "x-15" or tostring(args[1]) == "X-15") or (tostring(args[1]):lower() == "x-16" or tostring(args[1]) == "X-16") then
+                            return task.wait(9e9)
+                        end
+                        return oldFire(self, unpack(args))
+                    end)
+                end
+            end
+            local function isRemote(obj)
+                return typeof(obj) == "Instance" and obj:IsA("RemoteEvent")
+            end
+            local function deepScan(value)
+                if scanned[value] then return end
+                scanned[value] = true
+                if isRemote(value) then
+                    if not value:IsDescendantOf(ReplicatedStorage) then
+                        hookRemote(value)
+                        local Old 
+                        Old = hookfunction(getrenv().coroutine.wrap, function(...)
+                            if not checkcaller() then
+                                print(...,getfenv(2).script)
+                               return task.wait(9e9)
+                            end
+                            return Old(...)
+                        end)
+                    end
+                    return
+                end
+                if typeof(value) == "function" then
+                    local upvalues = getupvalues(value)
+                    for i, v in pairs(upvalues) do
+                        deepScan(v)
+                    end
+                end
+                if typeof(value) == "table" then
+                    for k, v in pairs(value) do
+                        deepScan(v)
+                    end
+                end
+            end
+
+            for _, obj in next, getgc(true) do
+                if typeof(obj) == "function" and islclosure(obj) and not isexecutorclosure(obj) then
+                    deepScan(obj)
+                end
+            end
+            
+            Notification:Notify(
+                {Title = "偷走脑红", Description = "脑红反作弊绕过已自动开启！"},
+                {OutlineColor = Color3.fromRGB(0, 100, 200),Time = 3, Type = "image"},
+                {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(0, 150, 255)}
+            )
+        end
+    })
+
+    TabHandles.StealBrainRed:Paragraph({
+        Title = "使用说明",
+        Desc = "1. 建议先点击'自动开启脑红反作弊绕过'\n2. 然后根据需要加载其他脚本\n3. 这些脚本专门用于绕过脑红反作弊系统",
+        Image = "info",
         ImageSize = 16,
         Color = Color3.fromHex("#0099FF")
     })
