@@ -1,0 +1,57 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+
+local timeLabel = Instance.new("TextLabel")
+timeLabel.Size = UDim2.new(0, 300, 0, 60)
+timeLabel.Position = UDim2.new(1, -310, 0, 10)
+timeLabel.BackgroundTransparency = 1
+timeLabel.Text = "欢迎使用皮空脚本\n北京时间：--:--"
+timeLabel.TextSize = 18
+timeLabel.Font = Enum.Font.SourceSansBold
+timeLabel.TextStrokeTransparency = 0.8
+timeLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+timeLabel.Parent = screenGui
+
+-- 更丰富的渐变颜色序列
+local colorSequence = {
+    Color3.fromRGB(255, 0, 0),    -- 红
+    Color3.fromRGB(255, 165, 0),  -- 橙
+    Color3.fromRGB(255, 255, 0),  -- 黄
+    Color3.fromRGB(0, 255, 0),    -- 绿
+    Color3.fromRGB(0, 0, 255),    -- 蓝
+    Color3.fromRGB(75, 0, 130),   -- 靛
+    Color3.fromRGB(238, 130, 238) -- 紫
+}
+
+local colorIndex = 1
+local transitionProgress = 0
+
+while true do
+    local now = os.date("*t")
+    local hours = string.format("%02d", now.hour)
+    local minutes = string.format("%02d", now.min)
+    
+    timeLabel.Text = "欢迎使用皮空脚本\n北京时间：" .. hours .. ":" .. minutes
+    
+    -- 平滑颜色过渡
+    local currentColor = colorSequence[colorIndex]
+    local nextColor = colorSequence[colorIndex % #colorSequence + 1]
+    
+    local r = currentColor.R + (nextColor.R - currentColor.R) * transitionProgress
+    local g = currentColor.G + (nextColor.G - currentColor.G) * transitionProgress
+    local b = currentColor.B + (nextColor.B - currentColor.B) * transitionProgress
+    
+    timeLabel.TextColor3 = Color3.new(r, g, b)
+    
+    transitionProgress = transitionProgress + 0.05
+    if transitionProgress >= 1 then
+        transitionProgress = 0
+        colorIndex = colorIndex % #colorSequence + 1
+    end
+    
+    wait(0.1)
+end
