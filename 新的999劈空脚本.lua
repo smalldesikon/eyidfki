@@ -1,4 +1,4 @@
--- 加载动画
+-- 皮空重置版 - 带加载动画完整版
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -6,9 +6,10 @@ local ContentProvider = game:GetService("ContentProvider")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- 加载动画配置
 local CONFIG = {
     LOAD_TIME = 5,
-    PRIMARY_COLOR = Color3.fromRGB(0, 150, 255),  -- 改回蓝色主题
+    PRIMARY_COLOR = Color3.fromRGB(0, 150, 255),
     SECONDARY_COLOR = Color3.fromRGB(0, 120, 220),
     GLOW_INTENSITY = 0.6,
     LOGO_IMAGE = "rbxassetid://137107933084759",
@@ -31,11 +32,13 @@ local CONFIG = {
     BG_PARTICLE_COUNT = 8
 }
 
+-- 预加载资源
 ContentProvider:PreloadAsync({
     CONFIG.LOGO_IMAGE,
     "rbxassetid://109223169214001"
 })
 
+-- 创建加载界面
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "BlueBorderLoadingScreen"
 screenGui.ResetOnSpawn = false
@@ -295,6 +298,7 @@ percentText.TextTransparency = 1
 percentText.ZIndex = 12
 percentText.Parent = progressContainer
 
+-- 加载动画函数
 local function createParticles()
     for i = 1, CONFIG.PARTICLE_COUNT do
         local particle = Instance.new("Frame")
@@ -552,6 +556,7 @@ local function loadingAnimation()
     initMainScript()
 end
 
+-- 启动加载动画
 screenGui.Parent = playerGui
 
 coroutine.wrap(logoFloatAnimation)()
@@ -563,13 +568,13 @@ coroutine.wrap(loadingAnimation)()
 
 -- 主脚本初始化函数
 function initMainScript()
-    -- 使用皮空的WindUI库
+    -- 使用WindUI库
     local success, WindUI = pcall(function()
         return loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingyan777/roblox/refs/heads/main/main.lua"))()
     end)
     
     if not success then
-        -- 如果皮空的库加载失败，使用备用方案
+        -- 如果库加载失败，使用备用方案
         loadSimpleUI()
         return
     end
@@ -644,7 +649,7 @@ function initMainScript()
     })
 
     Tabs.TranslateSection = Window:Section({
-        Title = "极速汉化",
+        Title = "API翻译",
         Opened = true,
     })
 
@@ -716,7 +721,7 @@ function initMainScript()
     -- 主功能标签页
     Tabs.MainTab = Tabs.MainSection:Tab({ Title = "首页", Icon = "home" })
     Tabs.CoreTab = Tabs.CoreSection:Tab({ Title = "核心功能", Icon = "zap" })
-    Tabs.TranslateTab = Tabs.TranslateSection:Tab({ Title = "极速汉化", Icon = "languages" })
+    Tabs.TranslateTab = Tabs.TranslateSection:Tab({ Title = "API翻译", Icon = "languages" })
 
     -- 脚本集合标签页
     Tabs.ScriptTab = Tabs.ScriptSection:Tab({ Title = "常用脚本", Icon = "download" })
@@ -773,7 +778,7 @@ function initMainScript()
         Desc = "皮空垃圾",
         Image = "https://c-ssl.duitang.com/uploads/blog/202310/21/oVS4gnBVIg4A1yJ.jpg",
         ImageSize = 42,
-        Thumbnail = "https://c-ssl.duitang.com/uploads/blog/202103/27/20210327131203_74b6b.jpg-",
+        Thumbnail = "https://c-ssl.duitang.com/uploads/blog/202103/27/20210327131203_74b6b.jpg",
         ThumbnailSize = 200
     })
 
@@ -831,13 +836,6 @@ function initMainScript()
             game.Workspace.Gravity = value
         end
     })
-    
-    Tabs.CoreTab:Button({
-        Title = "无头短腿美化",
-        Callback = function()
-            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Permanent-Headless-And-korblox-Script-4140"))()
-        end
-    })
 
     -- 穿墙功能
     local Noclip = false
@@ -890,146 +888,33 @@ function initMainScript()
         end
     })
 
-    -- ========== 极速汉化 ==========
+    -- ========== API翻译 ==========
     Tabs.TranslateTab:Paragraph({
-        Title = "极速汉化设置",
-        Desc = "自动翻译游戏界面文本",
+        Title = "API翻译",
+        Desc = "高级翻译系统 - 替换了极速汉化",
         Image = "languages",
-        ImageSize = 20,
+        ImageSize = 24,
         Color = Color3.fromHex("#0078D7")
     })
 
-    Tabs.TranslateTab:Divider()
-
-    local TranslateEngine = {
-        isRunning = false,
-        cache = {},
-        textData = {}
-    }
-
-    local function translateText(text)
-        if not text or text == "" then return "" end
-        
-        if TranslateEngine.cache[text] then
-            return TranslateEngine.cache[text]
-        end
-        
-        local url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q=" .. game:GetService("HttpService"):UrlEncode(text)
-        
-        local success, result = pcall(function()
-            return game:HttpGet(url)
-        end)
-        
-        if success and result then
-            local decoded = game:GetService("HttpService"):JSONDecode(result)
-            if decoded and decoded[1] then
-                local translated = ""
-                for _, item in ipairs(decoded[1]) do
-                    if item[1] then
-                        translated = translated .. item[1]
-                    end
-                end
-                TranslateEngine.cache[text] = translated
-                return translated
-            end
-        end
-        
-        return text
-    end
-
-    local function scanAndTranslate()
-        if not TranslateEngine.isRunning then return end
-        
-        local guis = {
-            game:GetService("CoreGui"),
-            game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-        }
-        
-        local translatedCount = 0
-        
-        for _, gui in ipairs(guis) do
-            for _, descendant in ipairs(gui:GetDescendants()) do
-                if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
-                    local text = descendant.Text
-                    if text and text ~= "" and #text > 2 and #text < 100 then
-                        if text:match("%a") and not text:match("[\228-\233][\128-\191].") then
-                            local translated = translateText(text)
-                            if translated and translated ~= text then
-                                pcall(function()
-                                    descendant.Text = translated
-                                    translatedCount = translatedCount + 1
-                                end)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        
-        if translatedCount > 0 then
+    Tabs.TranslateTab:Button({
+        Title = "加载API翻译脚本",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/smalldesikon/eyidfki/ecca7e04b83299b86c5ce8af98762071cc5f346f/api%E7%BF%BB%E8%AF%91"))()
             WindUI:Notify({
-                Title = "极速汉化", 
-                Content = "已翻译 " .. translatedCount .. " 个文本",
+                Title = "API翻译",
+                Content = "正在加载高级翻译系统...",
                 Duration = 3
             })
         end
-    end
-
-    local TranslateToggle = Tabs.TranslateTab:Toggle({
-        Title = "启用极速汉化",
-        Desc = "自动扫描并翻译界面文本",
-        Default = false,
-        Callback = function(state)
-            TranslateEngine.isRunning = state
-            if state then
-                WindUI:Notify({
-                    Title = "极速汉化", 
-                    Content = "汉化功能已启用，开始扫描界面...",
-                    Duration = 3
-                })
-                spawn(function()
-                    while TranslateEngine.isRunning do
-                        scanAndTranslate()
-                        wait(5)
-                    end
-                end)
-            else
-                WindUI:Notify({
-                    Title = "极速汉化", 
-                    Content = "汉化功能已关闭",
-                    Duration = 3
-                })
-            end
-        end
     })
 
-    Tabs.TranslateTab:Button({
-        Title = "立即翻译界面",
-        Icon = "refresh-cw",
-        Callback = function()
-            if TranslateEngine.isRunning then
-                scanAndTranslate()
-            else
-                WindUI:Notify({
-                    Title = "极速汉化", 
-                    Content = "请先启用极速汉化",
-                    Duration = 3
-                })
-            end
-        end
-    })
-
-    Tabs.TranslateTab:Button({
-        Title = "清空翻译缓存",
-        Icon = "trash-2",
-        Callback = function()
-            TranslateEngine.cache = {}
-            WindUI:Notify({
-                Title = "极速汉化", 
-                Content = "翻译缓存已清空",
-                Duration = 3
-            })
-        end
+    Tabs.TranslateTab:Paragraph({
+        Title = "说明",
+        Desc = "点击上方按钮加载API翻译脚本\n该脚本提供更强大的翻译功能",
+        Image = "info",
+        ImageSize = 20,
+        Color = Color3.fromHex("#FFA500")
     })
 
     -- ========== 常用脚本 ==========
@@ -1642,144 +1527,8 @@ function loadSimpleUI()
     message:Destroy()
 end
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- 核心功能函数（包含原脚本所有逻辑）
-local function initTimeDisplay()
-    -- 先清除旧的ScreenGui避免重复
-    local oldGui = playerGui:FindFirstChild("TimeDisplayGui")
-    if oldGui then
-        oldGui:Destroy()
-    end
-
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "TimeDisplayGui" -- 给Gui命名方便查找
-    screenGui.Parent = playerGui
-
-    local timeLabel = Instance.new("TextLabel")
-    timeLabel.Size = UDim2.new(0, 300, 0, 60)
-    timeLabel.Position = UDim2.new(1, -310, 0, 10)
-    timeLabel.BackgroundTransparency = 1
-    timeLabel.Text = "欢迎使用皮空脚本\n北京时间：--:--"
-    timeLabel.TextSize = 18
-    timeLabel.Font = Enum.Font.SourceSansBold
-    timeLabel.TextStrokeTransparency = 0.8
-    timeLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    timeLabel.Parent = screenGui
-
-    -- 颜色序列（保留原所有颜色）
-    local colorSequence = {
-        Color3.fromRGB(255, 0, 0), Color3.fromRGB(255, 165, 0), Color3.fromRGB(255, 255, 0),
-        Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255), Color3.fromRGB(75, 0, 130),
-        Color3.fromRGB(238, 130, 238), Color3.fromRGB(255, 192, 203), Color3.fromRGB(0, 255, 255),
-        Color3.fromRGB(255, 0, 255), Color3.fromRGB(165, 42, 42), Color3.fromRGB(128, 128, 0),
-        Color3.fromRGB(0, 128, 0), Color3.fromRGB(0, 0, 128), Color3.fromRGB(128, 0, 0),
-        Color3.fromRGB(128, 0, 128), Color3.fromRGB(0, 128, 128), Color3.fromRGB(255, 182, 193),
-        Color3.fromRGB(144, 238, 144), Color3.fromRGB(173, 216, 230), Color3.fromRGB(255, 255, 224),
-        Color3.fromRGB(221, 160, 221), Color3.fromRGB(255, 218, 185), Color3.fromRGB(255, 215, 0),
-        Color3.fromRGB(192, 192, 192), Color3.fromRGB(128, 128, 128), Color3.fromRGB(64, 64, 64),
-        Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0), Color3.fromRGB(255, 127, 80),
-        Color3.fromRGB(255, 99, 71), Color3.fromRGB(255, 69, 0), Color3.fromRGB(255, 20, 147),
-        Color3.fromRGB(255, 105, 180), Color3.fromRGB(139, 0, 139), Color3.fromRGB(138, 43, 226),
-        Color3.fromRGB(148, 0, 211), Color3.fromRGB(65, 105, 225), Color3.fromRGB(106, 90, 205),
-        Color3.fromRGB(135, 206, 235), Color3.fromRGB(0, 191, 255), Color3.fromRGB(70, 130, 180),
-        Color3.fromRGB(72, 61, 139), Color3.fromRGB(64, 224, 208), Color3.fromRGB(0, 139, 139),
-        Color3.fromRGB(0, 255, 127), Color3.fromRGB(0, 100, 0), Color3.fromRGB(46, 139, 87),
-        Color3.fromRGB(143, 188, 143), Color3.fromRGB(50, 205, 50), Color3.fromRGB(154, 205, 50),
-        Color3.fromRGB(107, 142, 35), Color3.fromRGB(240, 230, 140), Color3.fromRGB(189, 183, 107),
-        Color3.fromRGB(218, 165, 32), Color3.fromRGB(210, 180, 140), Color3.fromRGB(139, 69, 19),
-        Color3.fromRGB(210, 105, 30), Color3.fromRGB(160, 82, 45), Color3.fromRGB(160, 120, 90),
-        Color3.fromRGB(128, 70, 27), Color3.fromRGB(101, 67, 33), Color3.fromRGB(188, 143, 143),
-        Color3.fromRGB(153, 102, 102), Color3.fromRGB(245, 245, 220), Color3.fromRGB(222, 184, 135),
-        Color3.fromRGB(255, 235, 205), Color3.fromRGB(255, 222, 173), Color3.fromRGB(250, 235, 215),
-        Color3.fromRGB(255, 239, 213), Color3.fromRGB(250, 240, 230), Color3.fromRGB(253, 245, 230),
-        Color3.fromRGB(255, 253, 208), Color3.fromRGB(255, 250, 205), Color3.fromRGB(255, 248, 220),
-        Color3.fromRGB(255, 245, 238), Color3.fromRGB(255, 250, 205), Color3.fromRGB(255, 255, 240),
-        Color3.fromRGB(240, 255, 240), Color3.fromRGB(224, 255, 255), Color3.fromRGB(245, 255, 250),
-        Color3.fromRGB(240, 255, 255), Color3.fromRGB(240, 248, 255), Color3.fromRGB(230, 230, 250),
-        Color3.fromRGB(216, 191, 216), Color3.fromRGB(186, 85, 211), Color3.fromRGB(176, 48, 96),
-        Color3.fromRGB(218, 112, 214), Color3.fromRGB(153, 50, 204), Color3.fromRGB(176, 224, 230),
-        Color3.fromRGB(95, 158, 160), Color3.fromRGB(135, 206, 250), Color3.fromRGB(70, 130, 180),
-        Color3.fromRGB(176, 196, 222), Color3.fromRGB(0, 0, 139), Color3.fromRGB(25, 25, 112),
-        Color3.fromRGB(0, 0, 51), Color3.fromRGB(0, 71, 171), Color3.fromRGB(0, 0, 102),
-        Color3.fromRGB(0, 0, 205), Color3.fromRGB(0, 123, 167), Color3.fromRGB(0, 86, 102),
-        Color3.fromRGB(0, 158, 115), Color3.fromRGB(0, 102, 102), Color3.fromRGB(0, 140, 140),
-        Color3.fromRGB(0, 87, 87), Color3.fromRGB(34, 139, 34), Color3.fromRGB(1, 68, 33),
-        Color3.fromRGB(173, 255, 47), Color3.fromRGB(124, 252, 0), Color3.fromRGB(127, 255, 0),
-        Color3.fromRGB(0, 250, 154), Color3.fromRGB(0, 87, 63), Color3.fromRGB(152, 251, 152),
-        Color3.fromRGB(102, 205, 170), Color3.fromRGB(175, 238, 238), Color3.fromRGB(72, 209, 204),
-        Color3.fromRGB(60, 179, 113), Color3.fromRGB(0, 86, 63), Color3.fromRGB(0, 51, 0),
-        Color3.fromRGB(51, 51, 0), Color3.fromRGB(85, 107, 47)
-    }
-
-    local colorIndex = 1
-    local transitionProgress = 0
-    local running = true -- 控制循环开关
-
-    -- 时间更新与颜色渐变循环
-    spawn(function()
-        while running do
-            -- 更新时间
-            local now = os.date("*t")
-            local hours = string.format("%02d", now.hour)
-            local minutes = string.format("%02d", now.min)
-            timeLabel.Text = "欢迎使用皮空脚本\n北京时间：" .. hours .. ":" .. minutes
-
-            -- 平滑颜色过渡
-            local currentColor = colorSequence[colorIndex]
-            local nextColor = colorSequence[colorIndex % #colorSequence + 1]
-            local r = currentColor.R + (nextColor.R - currentColor.R) * transitionProgress
-            local g = currentColor.G + (nextColor.G - currentColor.G) * transitionProgress
-            local b = currentColor.B + (nextColor.B - currentColor.B) * transitionProgress
-            timeLabel.TextColor3 = Color3.new(r, g, b)
-
-            -- 更新进度
-            transitionProgress = transitionProgress + 0.15
-            if transitionProgress >= 1 then
-                transitionProgress = 0
-                colorIndex = colorIndex % #colorSequence + 1
-            end
-
-            wait(0.1)
-        end
-    end)
-
-    -- 返回停止函数，用于角色死亡时清理
-    return function()
-        running = false
-        screenGui:Destroy()
-    end
-end
-
--- 死亡检测与自动重启逻辑
-local stopCurrentDisplay -- 存储当前显示的停止函数
-
--- 监听角色加载（首次加载/复活后加载）
-local function onCharacterAdded(character)
-    -- 停止之前的显示
-    if stopCurrentDisplay then
-        stopCurrentDisplay()
-    end
-
-    -- 重新初始化显示
-    stopCurrentDisplay = initTimeDisplay()
-
-    -- 监听角色死亡
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.Died:Connect(function()
-        -- 死亡时停止当前显示
-        if stopCurrentDisplay then
-            stopCurrentDisplay()
-        end
-    end)
-end
-
--- 首次加载角色
-if player.Character then
-    onCharacterAdded(player.Character)
-end
-
--- 监听角色复活（CharacterAdded事件在复活时会触发）
-player.CharacterAdded:Connect(onCharacterAdded)
+-- 执行额外脚本
+pcall(function()
+     loadstring(game:HttpGet("https://raw.githubusercontent.com/smalldesikon/eyidfki/a53d5face05b0a8e732ca27a905a78186d869131/%E5%8C%97%E4%BA%AC%E6%97%B6%E9%97%B4"))()
+     print("✅ 执行成功")
+ end)
