@@ -1,0 +1,1127 @@
+-- 皮空API翻译 - 完整独立版
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+
+-- 主脚本初始化函数
+function initTranslationScript()
+    -- 使用WindUI库
+    local success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingyan777/roblox/refs/heads/main/main.lua"))()
+    end)
+    
+    if not success then
+        -- 备用简单UI
+        local message = Instance.new("Message")
+        message.Text = "皮空API翻译 - WindUI加载失败，请检查网络连接"
+        message.Parent = workspace
+        wait(3)
+        message:Destroy()
+        return
+    end
+
+    -- 显示欢迎通知
+    WindUI:Notify({
+        Title = "皮空API翻译",
+        Content = "高级多API翻译系统已加载",
+        Duration = 4
+    })
+
+    local Confirmed = false
+
+    -- 欢迎弹窗
+    WindUI:Popup({
+        Title = "皮空API翻译",
+        IconThemed = true,
+        Content = "多API支持的智能翻译系统\n享受无缝的界面汉化体验",
+        Theme = "Light",
+        Buttons = {
+            {
+                Title = "退出",
+                Callback = function() 
+                    return
+                end,
+                Variant = "Secondary",
+            },
+            {
+                Title = "开始使用",
+                Icon = "arrow-right",
+                Callback = function() 
+                    Confirmed = true 
+                end,
+                Variant = "Primary",
+            }
+        }
+    })
+
+    repeat wait() until Confirmed
+
+    -- 创建主窗口
+    local Window = WindUI:CreateWindow({
+        Title = "皮空API翻译",
+        Icon = "rbxassetid://4483362748",
+        IconThemed = true,
+        Folder = "皮空翻译",
+        Size = UDim2.fromOffset(620, 450),
+        Transparent = true,
+        Theme = "Light",
+        User = { 
+            Enabled = true,
+            Image = "https://c-ssl.duitang.com/uploads/blog/202103/27/20210327131203_74b6b.jpg"
+        },
+        SideBarWidth = 200,
+        ScrollBarEnabled = true,
+    })
+
+    -- 添加标签
+    Window:Tag({
+        Title = "皮空API翻译",
+        Color = Color3.fromHex("#FF6B6B")
+    })
+
+    -- 创建标签页结构
+    local Tabs = {}
+
+    -- 主功能部分
+    Tabs.MainSection = Window:Section({
+        Title = "翻译控制",
+        Icon = "languages",
+        Opened = true,
+    })
+
+    Tabs.ConfigSection = Window:Section({
+        Title = "API设置",
+        Opened = true,
+    })
+
+    Tabs.AdvancedSection = Window:Section({
+        Title = "高级功能",
+        Opened = true,
+    })
+
+    Tabs.InfoSection = Window:Section({
+        Title = "系统信息",
+        Opened = true,
+    })
+
+    -- 创建标签页
+    Tabs.MainTab = Tabs.MainSection:Tab({ Title = "翻译控制", Icon = "play" })
+    Tabs.ConfigTab = Tabs.ConfigSection:Tab({ Title = "API设置", Icon = "settings" })
+    Tabs.AdvancedTab = Tabs.AdvancedSection:Tab({ Title = "高级功能", Icon = "zap" })
+    Tabs.InfoTab = Tabs.InfoSection:Tab({ Title = "系统信息", Icon = "info" })
+
+    Window:SelectTab(1)
+
+    -- ========== 翻译引擎初始化 ==========
+    local LocalPlayer = Players.LocalPlayer
+    if not LocalPlayer then
+        LocalPlayer = Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    end
+
+    local MY_NAMESPACE = "皮空翻译_" .. tostring(math.random(10000, 99999))
+    if not _G[MY_NAMESPACE] then
+        _G[MY_NAMESPACE] = {
+            textData = {},
+            scannedElements = {},
+            translatedElements = {},
+            monitorConnections = {},
+            translateQueue = {},
+            queuedSet = {},
+            isProcessingQueue = false,
+            isRunning = false,
+            extractCount = 0,
+            translateCount = 0,
+            localizeCount = 0,
+            cache = {},
+            lastScanTime = 0,
+            totalElementsScanned = 0
+        }
+    end
+    local Engine = _G[MY_NAMESPACE]
+
+    -- 运行时配置
+    local RUNTIME = {
+        translationAPI = "Google",
+        customAPIUrl = "",
+        translationsPerSecond = 25,
+        batchSize = 8,
+        concurrencyLimit = 6,
+        scanInterval = 3,
+        minTextLength = 1,
+        maxTextLength = 150,
+        CACHE_ENABLED = true,
+        CACHE_FILE = "皮空翻译缓存.json",
+        autoStart = false,
+        smartDetection = true,
+        excludeChinese = true
+    }
+
+    -- 文件操作函数
+    local readFunc, writeFunc
+    pcall(function()
+        if type(syn) == "table" then
+            readFunc = syn.readfile or readfile
+            writeFunc = syn.writefile or writefile
+        else
+            readFunc = readfile
+            writeFunc = writefile
+        end
+    end)
+
+    local function getVerifyFolderPath()
+        local basePath = "Roblox/Scripts"
+        local folderPath = basePath .. "/皮空翻译"
+        return folderPath
+    end
+
+    -- 确保文件夹存在
+    pcall(function()
+        if not isfolder("Roblox") then
+            makefolder("Roblox")
+        end
+        if not isfolder("Roblox/Scripts") then
+            makefolder("Roblox/Scripts")
+        end
+        if not isfolder(getVerifyFolderPath()) then
+            makefolder(getVerifyFolderPath())
+        end
+    end)
+
+    -- 缓存函数
+    local function loadCacheFromFile()
+        if not RUNTIME.CACHE_ENABLED then return end
+        if type(readFunc) ~= "function" then return end
+        
+        local filePath = getVerifyFolderPath() .. "/" .. RUNTIME.CACHE_FILE
+        if not isfile(filePath) then return end
+        
+        local ok, content = pcall(function() 
+            return readFunc(filePath) 
+        end)
+        
+        if ok and content and content ~= "" then
+            local suc, data = pcall(function() 
+                return HttpService:JSONDecode(content) 
+            end)
+            if suc and type(data) == "table" then
+                Engine.cache = data
+                for k,v in pairs(data) do
+                    Engine.textData[k] = Engine.textData[k] or { 
+                        translation = v, 
+                        paths = {}, 
+                        translated = v ~= "" 
+                    }
+                end
+                print("皮空翻译 - 缓存加载成功，共 " .. #data .. " 条记录")
+            end
+        end
+    end
+
+    local function saveCacheToFile()
+        if not RUNTIME.CACHE_ENABLED then return end
+        if type(writeFunc) ~= "function" then return end
+        
+        local ok, json = pcall(function() 
+            return HttpService:JSONEncode(Engine.cache or {}) 
+        end)
+        
+        if ok and json then
+            pcall(function() 
+                writeFunc(getVerifyFolderPath() .. "/" .. RUNTIME.CACHE_FILE, json) 
+            end)
+        end
+    end
+
+    local function clearCache()
+        Engine.cache = {}
+        Engine.textData = {}
+        if type(writeFunc) == "function" then
+            pcall(function() 
+                writeFunc(getVerifyFolderPath() .. "/" .. RUNTIME.CACHE_FILE, "{}") 
+            end)
+        end
+        WindUI:Notify({
+            Title = "皮空翻译",
+            Content = "翻译缓存已清空",
+            Duration = 3
+        })
+    end
+
+    -- 文本过滤
+    local function shouldFilterText(text)
+        if not text or text:gsub("%s+", "") == "" then return true end
+        if text:match("^[%p%s]+$") then return true end
+        if #text < RUNTIME.minTextLength then return true end
+        if #text > RUNTIME.maxTextLength then return true end
+        
+        -- 排除中文文本（如果启用）
+        if RUNTIME.excludeChinese and text:match("[\228-\233][\128-\191].") then
+            return true
+        end
+        
+        return false
+    end
+
+    -- 多翻译API支持
+    local function translateWithGoogle(orig)
+        local url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q=" .. HttpService:UrlEncode(orig)
+        
+        local ok, body = pcall(function()
+            return game:HttpGet(url, true, {["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        end)
+        
+        if not ok or not body then 
+            return "" 
+        end
+        
+        local parsedOk, parsed = pcall(function() 
+            return HttpService:JSONDecode(body) 
+        end)
+        
+        if not parsedOk or type(parsed) ~= "table" or type(parsed[1]) ~= "table" then
+            return ""
+        end
+        
+        local parts = {}
+        for _, seg in ipairs(parsed[1]) do
+            if type(seg) == "table" and seg[1] then 
+                table.insert(parts, tostring(seg[1])) 
+            end
+        end
+        
+        local result = table.concat(parts)
+        return result ~= orig and result or ""
+    end
+
+    local function translateWithBaidu(orig)
+        -- 百度翻译API实现
+        local appid = "your_appid"  -- 需要用户自己填写
+        local key = "your_key"      -- 需要用户自己填写
+        local salt = tostring(math.random(10000, 99999))
+        local sign = appid .. orig .. salt .. key
+        
+        -- 这里需要MD5计算，简化处理
+        return "" -- 需要完整实现
+    end
+
+    local function translateWithTencent(orig)
+        -- 腾讯翻译API实现
+        return "" -- 需要完整实现
+    end
+
+    local function translateWithCustom(orig)
+        if RUNTIME.customAPIUrl == "" then return "" end
+        
+        local url = RUNTIME.customAPIUrl:gsub("{text}", HttpService:UrlEncode(orig))
+        local ok, body = pcall(function()
+            return game:HttpGet(url, true, {["User-Agent"] = "Mozilla/5.0"})
+        end)
+        
+        if ok and body then
+            return body
+        end
+        
+        return ""
+    end
+
+    local function translateText(orig)
+        if not orig or orig == "" then return "" end
+        
+        -- 检查缓存
+        if Engine.textData[orig] and Engine.textData[orig].translation and Engine.textData[orig].translation ~= "" then
+            return Engine.textData[orig].translation
+        end
+        
+        if RUNTIME.CACHE_ENABLED and Engine.cache and Engine.cache[orig] then
+            Engine.textData[orig] = Engine.textData[orig] or { 
+                translation = Engine.cache[orig], 
+                paths = {}, 
+                translated = true 
+            }
+            return Engine.cache[orig]
+        end
+
+        local translation = ""
+        
+        -- 根据选择的API进行翻译
+        if RUNTIME.translationAPI == "Google" then
+            translation = translateWithGoogle(orig)
+        elseif RUNTIME.translationAPI == "Baidu" then
+            translation = translateWithBaidu(orig)
+        elseif RUNTIME.translationAPI == "Tencent" then
+            translation = translateWithTencent(orig)
+        elseif RUNTIME.translationAPI == "Custom" then
+            translation = translateWithCustom(orig)
+        end
+
+        if translation ~= "" and translation ~= orig then
+            Engine.textData[orig] = Engine.textData[orig] or { 
+                translation = "", 
+                paths = {}, 
+                translated = false 
+            }
+            Engine.textData[orig].translation = translation
+            Engine.textData[orig].translated = true
+            Engine.translateCount = Engine.translateCount + 1
+            
+            if RUNTIME.CACHE_ENABLED then
+                Engine.cache[orig] = translation
+                spawn(saveCacheToFile)
+            end
+        end
+        
+        return translation
+    end
+
+    -- 队列管理
+    local function enqueueText(text)
+        if not text or shouldFilterText(text) then return end
+        if Engine.queuedSet[text] or (Engine.textData[text] and Engine.textData[text].translated) then return end
+        
+        table.insert(Engine.translateQueue, { text = text, priority = #text })
+        Engine.queuedSet[text] = true
+    end
+
+    -- 增强版GUI获取函数
+    local function gethui_enhanced()
+        local guis = {}
+        
+        -- 尝试各种获取GUI的方法
+        if type(gethui) == "function" then
+            local success, result = pcall(gethui)
+            if success and result then
+                table.insert(guis, result)
+            end
+        end
+        
+        local aliases = {"get_hui", "get_container", "get_roblox_gui", "_x92a", "get_gui"}
+        for _, alias in ipairs(aliases) do
+            if type(_G[alias]) == "function" then
+                local success, result = pcall(_G[alias])
+                if success and result then
+                    table.insert(guis, result)
+                end
+            end
+        end
+        
+        -- 添加标准GUI容器
+        local success, result = pcall(function()
+            return game:GetService("CoreGui")
+        end)
+        if success and result then
+            table.insert(guis, result)
+        end
+        
+        local localPlayer = Players.LocalPlayer
+        if localPlayer then
+            local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+            if playerGui then
+                table.insert(guis, playerGui)
+            end
+            
+            -- 添加其他可能的GUI容器
+            local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+            if backpack then
+                table.insert(guis, backpack)
+            end
+        end
+        
+        -- 扫描CoreGui中的特殊GUI
+        for _, obj in ipairs(CoreGui:GetDescendants()) do
+            if obj:IsA("ScreenGui") then
+                if obj.Name:find("Remote") or obj.Name:find("Gui") or obj.Name:find("Interface") then
+                    table.insert(guis, obj.Parent)
+                end
+            end
+        end
+        
+        -- 添加常见的执行器GUI
+        for _, obj in ipairs(CoreGui:GetDescendants()) do
+            if obj:IsA("ScreenGui") then
+                if obj.Name == "Synapse" or obj.Name == "Krnl" or obj.Name == "ScriptWare" or obj.Name == "Fluxus" then
+                    table.insert(guis, obj.Parent)
+                end
+            end
+        end
+        
+        local uniqueGuis = {}
+        for _, gui in ipairs(guis) do
+            if gui and not table.find(uniqueGuis, gui) then
+                table.insert(uniqueGuis, gui)
+            end
+        end
+        
+        return uniqueGuis
+    end
+
+    -- 文本提取
+    local function extractElementText(element)
+        if not element then return end
+        if not (element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox")) then return end
+        if Engine.scannedElements[element] then return end
+        
+        local ok, txt = pcall(function() return element.Text end)
+        if not ok or not txt then
+            Engine.scannedElements[element] = true
+            return
+        end
+        
+        local text = tostring(txt)
+        if shouldFilterText(text) then
+            Engine.scannedElements[element] = true
+            return
+        end
+        
+        local path = tostring(element)
+        if not Engine.textData[text] then
+            Engine.textData[text] = { 
+                translation = "", 
+                paths = { path }, 
+                translated = false 
+            }
+            Engine.extractCount = Engine.extractCount + 1
+            enqueueText(text)
+        else
+            local paths = Engine.textData[text].paths or {}
+            if not table.find(paths, path) then 
+                table.insert(paths, path) 
+                Engine.textData[text].paths = paths 
+            end
+        end
+        
+        Engine.scannedElements[element] = true
+    end
+
+    -- 监控元素
+    local function setupElementMonitor(element)
+        if not element then return end
+        if Engine.translatedElements[element] then return end
+        
+        local ok, textConn = pcall(function()
+            return element:GetPropertyChangedSignal("Text"):Connect(function()
+                task.wait(0.05)
+                extractElementText(element)
+            end)
+        end)
+        if ok and textConn then 
+            table.insert(Engine.monitorConnections, textConn) 
+        end
+        
+        -- 监控鼠标悬停事件
+        if element:IsA("TextButton") or element:IsA("TextLabel") then
+            local ok2, conn = pcall(function()
+                return element.MouseEnter:Connect(function()
+                    task.wait(0.1)
+                    extractElementText(element)
+                end)
+            end)
+            if ok2 and conn then 
+                table.insert(Engine.monitorConnections, conn) 
+            end
+        end
+    end
+
+    -- 扫描所有GUI元素
+    local function scanAllGuiElements()
+        local guis = gethui_enhanced()
+        local totalElements = 0
+        local newTexts = 0
+        
+        for _, container in ipairs(guis) do
+            if not container then continue end
+            
+            local descendants = {}
+            pcall(function()
+                descendants = container:GetDescendants()
+            end)
+            
+            for i, desc in ipairs(descendants) do
+                if desc and (desc:IsA("TextLabel") or desc:IsA("TextButton") or desc:IsA("TextBox")) then
+                    local beforeCount = Engine.extractCount
+                    extractElementText(desc)
+                    setupElementMonitor(desc)
+                    totalElements = totalElements + 1
+                    
+                    if Engine.extractCount > beforeCount then
+                        newTexts = newTexts + 1
+                    end
+                end
+                
+                -- 性能优化：每100个元素暂停一下
+                if i % 100 == 0 then
+                    task.wait(0.01)
+                end
+            end
+            
+            -- 监控新添加的元素
+            local ok, conn = pcall(function()
+                return container.DescendantAdded:Connect(function(desc)
+                    if desc and (desc:IsA("TextLabel") or desc:IsA("TextButton") or desc:IsA("TextBox")) then
+                        task.wait(0.05)
+                        extractElementText(desc)
+                        setupElementMonitor(desc)
+                    end
+                end)
+            end)
+            if ok and conn then
+                table.insert(Engine.monitorConnections, conn)
+            end
+        end
+        
+        Engine.totalElementsScanned = Engine.totalElementsScanned + totalElements
+        Engine.lastScanTime = os.time()
+        
+        WindUI:Notify({
+            Title = "皮空翻译",
+            Content = string.format("扫描完成！扫描了 %d 个元素，发现 %d 个新文本", totalElements, newTexts),
+            Duration = 3
+        })
+        
+        return totalElements, newTexts
+    end
+
+    -- 翻译处理循环
+    local function processTranslationQueue()
+        while Engine.isRunning and #Engine.translateQueue > 0 do
+            local batch = {}
+            for i = 1, math.min(RUNTIME.batchSize, #Engine.translateQueue) do
+                local item = table.remove(Engine.translateQueue, 1)
+                if item then
+                    table.insert(batch, item)
+                    Engine.queuedSet[item.text] = nil
+                end
+            end
+            
+            local translatedInBatch = 0
+            for _, item in ipairs(batch) do
+                spawn(function()
+                    local translation = translateText(item.text)
+                    if translation and translation ~= "" then
+                        if Engine.textData[item.text] then
+                            Engine.textData[item.text].translated = true
+                        end
+                        translatedInBatch = translatedInBatch + 1
+                    end
+                end)
+            end
+            
+            if translatedInBatch > 0 then
+                print(string.format("皮空翻译 - 批量翻译了 %d 个文本", translatedInBatch))
+            end
+            
+            task.wait(1.0 / RUNTIME.translationsPerSecond)
+        end
+    end
+
+    -- 本地化应用
+    local function applyLocalizations()
+        while Engine.isRunning do
+            local guis = gethui_enhanced()
+            local localizedCount = 0
+            
+            for _, container in ipairs(guis) do
+                if not container then continue end
+                
+                local descendants = {}
+                pcall(function()
+                    descendants = container:GetDescendants()
+                end)
+                
+                for _, desc in ipairs(descendants) do
+                    if desc and (desc:IsA("TextLabel") or desc:IsA("TextButton") or desc:IsA("TextBox")) then
+                        if Engine.translatedElements[desc] then continue end
+                        
+                        local ok, text = pcall(function() return desc.Text end)
+                        if not ok or not text then continue end
+                        
+                        local origText = tostring(text)
+                        local data = Engine.textData[origText]
+                        
+                        if data and data.translation and data.translation ~= "" and data.translation ~= origText then
+                            local success = pcall(function()
+                                desc.Text = data.translation
+                                Engine.translatedElements[desc] = true
+                                Engine.localizeCount = Engine.localizeCount + 1
+                                localizedCount = localizedCount + 1
+                            end)
+                        end
+                    end
+                end
+            end
+            
+            if localizedCount > 0 then
+                print(string.format("皮空翻译 - 应用了 %d 个翻译", localizedCount))
+            end
+            
+            task.wait(RUNTIME.scanInterval)
+        end
+    end
+
+    -- 启动翻译服务
+    local function startLocalization()
+        if Engine.isRunning then 
+            WindUI:Notify({
+                Title = "皮空翻译",
+                Content = "翻译服务已经在运行中",
+                Duration = 2
+            })
+            return 
+        end
+        
+        Engine.isRunning = true
+        WindUI:Notify({
+            Title = "皮空翻译",
+            Content = "正在启动翻译服务...",
+            Duration = 2
+        })
+        
+        -- 加载缓存
+        if RUNTIME.CACHE_ENABLED then
+            loadCacheFromFile()
+        end
+        
+        -- 开始扫描
+        spawn(function()
+            local total, new = scanAllGuiElements()
+            
+            -- 启动翻译队列处理
+            spawn(function()
+                while Engine.isRunning do
+                    processTranslationQueue()
+                    task.wait(0.5)
+                end
+            end)
+            
+            -- 启动本地化应用
+            spawn(applyLocalizations)
+            
+            WindUI:Notify({
+                Title = "皮空翻译",
+                Content = string.format("翻译服务已启动！发现 %d 个待翻译文本", #Engine.translateQueue),
+                Duration = 3
+            })
+        end)
+    end
+
+    -- 停止翻译服务
+    local function stopLocalization()
+        if not Engine.isRunning then 
+            WindUI:Notify({
+                Title = "皮空翻译",
+                Content = "翻译服务未在运行",
+                Duration = 2
+            })
+            return 
+        end
+        
+        Engine.isRunning = false
+        
+        -- 断开所有监控连接
+        for _, conn in ipairs(Engine.monitorConnections) do
+            pcall(function() 
+                if conn and conn.Disconnect then 
+                    conn:Disconnect() 
+                end 
+            end)
+        end
+        Engine.monitorConnections = {}
+        
+        -- 保存缓存
+        if RUNTIME.CACHE_ENABLED then
+            saveCacheToFile()
+        end
+        
+        WindUI:Notify({
+            Title = "皮空翻译",
+            Content = "翻译服务已停止",
+            Duration = 2
+        })
+    end
+
+    -- 重置翻译状态
+    local function resetTranslation()
+        stopLocalization()
+        
+        Engine.textData = {}
+        Engine.scannedElements = {}
+        Engine.translatedElements = {}
+        Engine.translateQueue = {}
+        Engine.queuedSet = {}
+        Engine.extractCount = 0
+        Engine.translateCount = 0
+        Engine.localizeCount = 0
+        Engine.totalElementsScanned = 0
+        
+        WindUI:Notify({
+            Title = "皮空翻译",
+            Content = "翻译状态已重置",
+            Duration = 2
+        })
+    end
+
+    -- ========== 翻译控制标签页 ==========
+    Tabs.MainTab:Paragraph({
+        Title = "皮空API翻译",
+        Desc = "高级多API翻译系统\n支持实时界面汉化和智能文本检测",
+        Image = "languages",
+        ImageSize = 32,
+        Color = Color3.fromHex("#FF6B6B")
+    })
+
+    -- 主控制按钮
+    local mainToggle = Tabs.MainTab:Toggle({
+        Title = "启动翻译服务",
+        Desc = "开始扫描和翻译界面文本",
+        Default = Engine.isRunning,
+        Callback = function(state)
+            if state then
+                startLocalization()
+            else
+                stopLocalization()
+            end
+        end
+    })
+
+    Tabs.MainTab:Button({
+        Title = "立即扫描界面",
+        Icon = "search",
+        Callback = function()
+            if Engine.isRunning then
+                spawn(scanAllGuiElements)
+            else
+                WindUI:Notify({
+                    Title = "皮空翻译",
+                    Content = "请先启动翻译服务",
+                    Duration = 3
+                })
+            end
+        end
+    })
+
+    Tabs.MainTab:Button({
+        Title = "强制应用翻译",
+        Icon = "refresh-cw",
+        Callback = function()
+            if Engine.isRunning then
+                spawn(applyLocalizations)
+                WindUI:Notify({
+                    Title = "皮空翻译",
+                    Content = "正在强制应用所有翻译...",
+                    Duration = 2
+                })
+            else
+                WindUI:Notify({
+                    Title = "皮空翻译",
+                    Content = "请先启动翻译服务",
+                    Duration = 3
+                })
+            end
+        end
+    })
+
+    Tabs.MainTab:Divider()
+
+    -- 状态显示
+    local statusText = string.format(
+        "服务状态: %s\n当前API: %s\n提取文本: %d\n已翻译: %d\n已应用: %d\n待翻译: %d\n总扫描: %d",
+        Engine.isRunning and "🟢 运行中" or "🔴 已停止",
+        RUNTIME.translationAPI,
+        Engine.extractCount,
+        Engine.translateCount,
+        Engine.localizeCount,
+        #Engine.translateQueue,
+        Engine.totalElementsScanned
+    )
+
+    Tabs.MainTab:Paragraph({
+        Title = "实时状态",
+        Desc = statusText,
+        Image = "bar-chart",
+        ImageSize = 20,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    -- ========== API设置标签页 ==========
+    Tabs.ConfigTab:Paragraph({
+        Title = "API设置",
+        Desc = "配置翻译API和基本参数",
+        Image = "settings",
+        ImageSize = 24,
+        Color = Color3.fromHex("#0078D7")
+    })
+
+    -- API选择
+    local apiDropdown = Tabs.ConfigTab:Dropdown({
+        Title = "翻译API",
+        Multi = false,
+        AllowNone = false,
+        Values = {"Google", "Baidu", "Tencent", "Custom"},
+        Callback = function(api)
+            RUNTIME.translationAPI = api
+            WindUI:Notify({
+                Title = "皮空翻译",
+                Content = "已切换到 " .. api .. " API",
+                Duration = 2
+            })
+        end
+    })
+    apiDropdown:Select(RUNTIME.translationAPI)
+
+    -- 自定义API设置
+    local customApiInput = Tabs.ConfigTab:Input({
+        Title = "自定义API URL",
+        PlaceholderText = "输入自定义翻译API URL，使用 {text} 作为文本占位符",
+        Value = RUNTIME.customAPIUrl,
+        Callback = function(text)
+            RUNTIME.customAPIUrl = text
+        end
+    })
+
+    Tabs.ConfigTab:Divider()
+
+    -- 文本过滤设置
+    Tabs.ConfigTab:Paragraph({
+        Title = "文本过滤",
+        Desc = "设置文本检测和过滤规则",
+        Image = "filter",
+        ImageSize = 20,
+        Color = Color3.fromHex("#FFA500")
+    })
+
+    local minLenSlider = Tabs.ConfigTab:Slider({
+        Title = "最小文本长度",
+        Value = {
+            Min = 1,
+            Max = 10,
+            Default = RUNTIME.minTextLength,
+        },
+        Increment = 1,
+        Callback = function(value)
+            RUNTIME.minTextLength = value
+        end
+    })
+
+    local maxLenSlider = Tabs.ConfigTab:Slider({
+        Title = "最大文本长度",
+        Value = {
+            Min = 50,
+            Max = 300,
+            Default = RUNTIME.maxTextLength,
+        },
+        Increment = 10,
+        Callback = function(value)
+            RUNTIME.maxTextLength = value
+        end
+    })
+
+    local excludeChineseToggle = Tabs.ConfigTab:Toggle({
+        Title = "排除中文文本",
+        Desc = "不翻译已经是中文的文本",
+        Default = RUNTIME.excludeChinese,
+        Callback = function(state)
+            RUNTIME.excludeChinese = state
+        end
+    })
+
+    -- ========== 高级功能标签页 ==========
+    Tabs.AdvancedTab:Paragraph({
+        Title = "高级设置",
+        Desc = "性能调优和高级功能配置",
+        Image = "zap",
+        ImageSize = 24,
+        Color = Color3.fromHex("#9B59B6")
+    })
+
+    -- 性能设置
+    local tpsSlider = Tabs.AdvancedTab:Slider({
+        Title = "每秒翻译数",
+        Desc = "控制翻译速度，值越高翻译越快但可能被限制",
+        Value = {
+            Min = 5,
+            Max = 50,
+            Default = RUNTIME.translationsPerSecond,
+        },
+        Increment = 1,
+        Callback = function(value)
+            RUNTIME.translationsPerSecond = value
+        end
+    })
+
+    local batchSlider = Tabs.AdvancedTab:Slider({
+        Title = "批处理大小",
+        Desc = "每次批量翻译的文本数量",
+        Value = {
+            Min = 1,
+            Max = 20,
+            Default = RUNTIME.batchSize,
+        },
+        Increment = 1,
+        Callback = function(value)
+            RUNTIME.batchSize = value
+        end
+    })
+
+    local scanSlider = Tabs.AdvancedTab:Slider({
+        Title = "扫描间隔(秒)",
+        Desc = "重新扫描界面和应用翻译的时间间隔",
+        Value = {
+            Min = 1,
+            Max = 10,
+            Default = RUNTIME.scanInterval,
+        },
+        Increment = 1,
+        Callback = function(value)
+            RUNTIME.scanInterval = value
+        end
+    })
+
+    Tabs.AdvancedTab:Divider()
+
+    -- 缓存设置
+    Tabs.AdvancedTab:Paragraph({
+        Title = "缓存管理",
+        Desc = "翻译结果缓存设置",
+        Image = "database",
+        ImageSize = 20,
+        Color = Color3.fromHex("#27AE60")
+    })
+
+    local cacheToggle = Tabs.AdvancedTab:Toggle({
+        Title = "启用翻译缓存",
+        Desc = "缓存翻译结果提高性能",
+        Default = RUNTIME.CACHE_ENABLED,
+        Callback = function(state)
+            RUNTIME.CACHE_ENABLED = state
+            if not state then
+                clearCache()
+            end
+        end
+    })
+
+    Tabs.AdvancedTab:Button({
+        Title = "清空翻译缓存",
+        Icon = "trash-2",
+        Callback = function()
+            clearCache()
+        end
+    })
+
+    Tabs.AdvancedTab:Button({
+        Title = "重置翻译状态",
+        Icon = "refresh-cw",
+        Callback = function()
+            resetTranslation()
+        end
+    })
+
+    -- ========== 系统信息标签页 ==========
+    Tabs.InfoTab:Paragraph({
+        Title = "系统信息",
+        Desc = "皮空API翻译 - 版本 1.0.0",
+        Image = "info",
+        ImageSize = 24,
+        Color = Color3.fromHex("#3498DB")
+    })
+
+    -- 系统状态
+    local systemInfo = string.format(
+        "注入器: %s\n游戏: %s\n玩家: %s\n运行时间: %s",
+        identifyexecutor() or "未知",
+        game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "未知",
+        Players.LocalPlayer.Name,
+        "刚刚启动"
+    )
+
+    Tabs.InfoTab:Paragraph({
+        Title = "运行环境",
+        Desc = systemInfo,
+        Image = "cpu",
+        ImageSize = 20,
+        Color = Color3.fromHex("#95A5A6")
+    })
+
+    Tabs.InfoTab:Divider()
+
+    -- 使用说明
+    Tabs.InfoTab:Paragraph({
+        Title = "使用说明",
+        Desc = "1. 在'翻译控制'中启动服务\n2. 在'API设置'中选择翻译API\n3. 在'高级设置'中调整性能参数\n4. 系统会自动扫描并翻译界面文本",
+        Image = "book-open",
+        ImageSize = 20,
+        Color = Color3.fromHex("#F39C12")
+    })
+
+    Tabs.InfoTab:Divider()
+
+    -- 关于信息
+    Tabs.InfoTab:Paragraph({
+        Title = "关于皮空API翻译",
+        Desc = "高级翻译系统\n支持多API、实时监控、智能缓存\n作者: 皮空团队",
+        Image = "user",
+        ImageSize = 20,
+        Color = Color3.fromHex("#E74C3C"),
+        Buttons = {
+            {
+                Title = "复制联系方式",
+                Icon = "copy",
+                Variant = "Tertiary",
+                Callback = function()
+                    setclipboard("皮空翻译 - QQ群: 1057315887")
+                    WindUI:Notify({
+                        Title = "皮空翻译", 
+                        Content = "联系方式已复制到剪贴板",
+                        Duration = 2
+                    })
+                end
+            }
+        }
+    })
+
+    -- 自动启动（如果配置了）
+    if RUNTIME.autoStart then
+        spawn(function()
+            wait(2)
+            startLocalization()
+        end)
+    end
+
+    -- 实时状态更新
+    local statsUpdateConnection
+    statsUpdateConnection = RunService.Heartbeat:Connect(function()
+        if not Engine then return end
+        
+        local currentStatus = string.format(
+            "服务状态: %s\n当前API: %s\n提取文本: %d\n已翻译: %d\n已应用: %d\n待翻译: %d\n总扫描: %d",
+            Engine.isRunning and "🟢 运行中" or "🔴 已停止",
+            RUNTIME.translationAPI,
+            Engine.extractCount,
+            Engine.translateCount,
+            Engine.localizeCount,
+            #Engine.translateQueue,
+            Engine.totalElementsScanned
+        )
+        
+        -- 这里可以添加实时更新UI的逻辑
+    end)
+
+    -- 窗口关闭时的处理
+    Window:OnClose(function()
+        print("皮空API翻译 - 窗口已关闭")
+        if statsUpdateConnection then
+            statsUpdateConnection:Disconnect()
+        end
+        stopLocalization()
+    end)
+
+    print("皮空API翻译 - 系统初始化完成！")
+    WindUI:Notify({
+        Title = "皮空API翻译",
+        Content = "系统准备就绪，可以开始使用",
+        Duration = 3
+    })
+end
+
+-- 直接启动
+initTranslationScript()
