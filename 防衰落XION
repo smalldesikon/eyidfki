@@ -1,0 +1,226 @@
+-- 司空脚本 - 终极无坠落系统 (恒定强力版)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local VIM = game:GetService("VirtualInputManager")
+local Player = Players.LocalPlayer
+
+-- ===== 配置区 =====
+local CONFIG = {
+    -- 【超级强反坠落】配置：固定强力刹车
+    SUPER_ANTI_FALL = {
+        ENABLED = true, -- 反坠落总开关（通过GUI按钮控制）
+        TRIGGER_VELOCITY = -50, -- 触发速度 (比默认更敏感，下落即触发)
+        UPWARDS_FORCE = 0.68,   -- ★★★ 核心参数：向上力大小 (0.68已是极强效果，可视情况调至0.8)
+        HORIZONTAL_DAMP = 0.85  -- 水平速度保持（让下落更自然）
+    },
+    -- 【自动反挂机】配置
+    ANTI_AFK = {
+        ENABLED = true, -- 自动开启
+        ACTION_INTERVAL = 10,
+        ACTION_JITTER = 4, -- 随机抖动时间
+        SAFE_KEYS = {Enum.KeyCode.LeftAlt, Enum.KeyCode.F12}
+    }
+}
+
+-- ===== 1. 发送系统提示 (自动开启时调用) =====
+local function sendSystemNotification()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = Player:WaitForChild("PlayerGui")
+    gui.ResetOnSpawn = false
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 400, 0, 120)
+    frame.Position = UDim2.new(0.5, -200, 0, 40)
+    frame.BackgroundColor3 = Color3.fromRGB(28, 32, 45)
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+    local accent = Instance.new("Frame")
+    accent.Size = UDim2.new(0, 6, 1, 0)
+    accent.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+    accent.BorderSizePixel = 0
+    accent.Parent = frame
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 40)
+    title.Position = UDim2.new(0, 20, 0, 20)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.GothamBlack
+    title.Text = "司空脚本丨反坠落伤害"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 26
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = frame
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Size = UDim2.new(1, -20, 0, 34)
+    subtitle.Position = UDim2.new(0, 20, 0, 62)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.Text = "已自动开启反挂机！"
+    subtitle.TextColor3 = Color3.fromRGB(180, 220, 255)
+    subtitle.TextSize = 20
+    subtitle.TextXAlignment = Enum.TextXAlignment.Left
+    subtitle.Parent = frame
+    frame.Position = UDim2.new(0.5, -200, 0, -150)
+    local slideIn = TweenService:Create(frame, TweenInfo.new(0.9, Enum.EasingStyle.Exponential), {Position = UDim2.new(0.5, -200, 0, 40)})
+    slideIn:Play()
+    task.wait(4)
+    local slideOut = TweenService:Create(frame, TweenInfo.new(0.7, Enum.EasingStyle.Circular), {Position = UDim2.new(0.5, -200, 0, -150)})
+    slideOut:Play()
+    slideOut.Completed:Connect(function() gui:Destroy() end)
+end
+
+-- ===== 2. 【超级强】反坠落系统 (恒定强力刹车) =====
+local fallConnections = {}
+local function toggleSuperAntiFall(enable)
+    CONFIG.SUPER_ANTI_FALL.ENABLED = enable
+    for _, conn in pairs(fallConnections) do conn:Disconnect() end
+    fallConnections = {}
+    if not enable then return end
+    local char = Player.Character
+    if not char then return end
+    local rootPart = char:WaitForChild("HumanoidRootPart", 2)
+    if not rootPart then return end
+    -- 核心：恒定强力刹车算法
+    local conn = RunService.Heartbeat:Connect(function()
+        if not CONFIG.SUPER_ANTI_FALL.ENABLED or not rootPart then return end
+        local vel = rootPart.Velocity
+        if vel.Y < CONFIG.SUPER_ANTI_FALL.TRIGGER_VELOCITY then
+            -- ★★★ 恒定强力干预：直接赋予一个强大的向上速度
+            local targetYVelocity = -15 -- 直接目标下落速度 (值越小越慢，-15已非常慢)
+            rootPart.Velocity = Vector3.new(
+                vel.X * CONFIG.SUPER_ANTI_FALL.HORIZONTAL_DAMP,
+                targetYVelocity,
+                vel.Z * CONFIG.SUPER_ANTI_FALL.HORIZONTAL_DAMP
+            )
+        end
+    end)
+    table.insert(fallConnections, conn)
+    warn("[超级反坠落] 已激活！恒定强力缓落生效中。")
+end
+
+-- ===== 3. 自动反挂机系统 =====
+local afkThread
+local function startAntiAFK()
+    if afkThread then return end
+    afkThread = task.spawn(function()
+        while CONFIG.ANTI_AFK.ENABLED do
+            local waitTime = CONFIG.ANTI_AFK.ACTION_INTERVAL + math.random(-CONFIG.ANTI_AFK.ACTION_JITTER, CONFIG.ANTI_AFK.ACTION_JITTER)
+            task.wait(math.max(2, waitTime))
+            if not CONFIG.ANTI_AFK.ENABLED then break end
+            local key = CONFIG.ANTI_AFK.SAFE_KEYS[math.random(#CONFIG.ANTI_AFK.SAFE_KEYS)]
+            pcall(function()
+                VIM:SendKeyEvent(true, key, false, nil)
+                task.wait(0.05)
+                VIM:SendKeyEvent(false, key, false, nil)
+            end)
+        end
+        afkThread = nil
+    end)
+end
+
+-- ===== 4. 控制GUI =====
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SK_ControlPanel_Ultimate"
+screenGui.Parent = Player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+local mainWindow = Instance.new("Frame")
+mainWindow.Size = UDim2.new(0, 320, 0, 180)
+mainWindow.Position = UDim2.new(0.02, 0, 0.25, 0)
+mainWindow.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+mainWindow.Active = true
+mainWindow.Draggable = true
+mainWindow.Parent = screenGui
+Instance.new("UICorner", mainWindow).CornerRadius = UDim.new(0, 14)
+local uiStroke = Instance.new("UIStroke", mainWindow)
+uiStroke.Color = Color3.fromRGB(0, 255, 255)
+uiStroke.Thickness = 2
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+title.Font = Enum.Font.GothamBold
+title.Text = "司空脚本丨反坠落伤害"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 22
+title.Parent = mainWindow
+Instance.new("UICorner", title).CornerRadius = UDim.new(0, 14)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0.9, 0, 0, 56)
+toggleBtn.Position = UDim2.new(0.05, 0, 0.35, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+toggleBtn.Font = Enum.Font.GothamSemibold
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.TextSize = 20
+toggleBtn.Text = "▶ 启动超级反坠落"
+toggleBtn.Parent = mainWindow
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 12)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -20, 0, 36)
+statusLabel.Position = UDim2.new(0, 10, 0, 130)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.Text = "状态: 反挂机(运行) | 反坠落(关闭)"
+statusLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+statusLabel.TextSize = 15
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = mainWindow
+local isFallActive = false
+toggleBtn.MouseButton1Click:Connect(function()
+    isFallActive = not isFallActive
+    toggleSuperAntiFall(isFallActive)
+    if isFallActive then
+        toggleBtn.Text = "⏹ 停止反坠落"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 80)
+        statusLabel.Text = "状态: 反挂机(运行) | 反坠落(运行)"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
+    else
+        toggleBtn.Text = "▶ 启动超级反坠落"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        statusLabel.Text = "状态: 反挂机(运行) | 反坠落(关闭)"
+        statusLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+    end
+end)
+
+-- ===== 5. 智能执行器GUI拖动模块 =====
+task.spawn(function()
+    task.wait(3)
+    local CoreGui = game:GetService("CoreGui")
+    local knownTargets = {
+        {"Delta", {"DeltaMainWindow", "DeltaWindow", "DeltaUI"}},
+        {"JJsploit", {"JJsploitWindow", "MainWindow", "JJGui"}},
+        {"Solara", {"SolaraWindow", "SolaraMain"}},
+        {"Xeno", {"XenoWindow", "XenoMain"}},
+        {"Ronix", {"RonixWindow", "RonixMain"}},
+    }
+    for _, targetInfo in pairs(knownTargets) do
+        local executorName = targetInfo[1]
+        local possibleNames = targetInfo[2]
+        for _, name in ipairs(possibleNames) do
+            local guiObject = CoreGui:FindFirstChild(name)
+            if guiObject and guiObject:IsA("GuiBase2d") then
+                local dragHandle = guiObject:FindFirstChild("TopBar") or guiObject:FindFirstChild("TitleBar") or guiObject
+                dragHandle.Active = true
+                dragHandle.Draggable = true
+                print("[执行器拖动] 已附加到: " .. executorName)
+                break
+            end
+        end
+    end
+end)
+
+-- ===== 6. 自动初始化 =====
+task.wait(1.5)
+sendSystemNotification()
+startAntiAFK()
+Player.CharacterAdded:Connect(function()
+    task.wait(1)
+    if isFallActive then
+        toggleSuperAntiFall(true)
+    end
+end)
+
+print("=========================================")
+print("司空脚本 - 终极无坠落系统 已加载")
+print("反坠落模式：恒定超级强力缓落")
+print("提示：通过GUI按钮控制反坠落开关")
+print("=========================================")
