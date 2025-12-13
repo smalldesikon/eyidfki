@@ -1,0 +1,2538 @@
+--[[
+	SUPER GIRL V2 - SISTEMA COMPLETO OPTIMIZADO
+	Tema Supergirl (Azul, Rojo, Amarillo)
+]]
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+
+-- Local Player and Character Variables
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+local mouse = player:GetMouse()
+local camera = Workspace.CurrentCamera
+
+-- Shared Configuration
+local originalGravity = Workspace.Gravity
+local allConnections = {}
+
+-- MENU CONFIGURATION - CAMBIOS SOLICITADOS
+local MENU_KEY = Enum.KeyCode.End -- Cambiado de Comma a End
+local NAV_NEXT_KEY = Enum.KeyCode.PageDown -- Cambiado de RightAlt a PageDown
+local NAV_PREV_KEY = Enum.KeyCode.PageUp -- Cambiado de LeftAlt a PageUp
+local TOGGLE_OPTIONS_KEY = Enum.KeyCode.Delete
+
+local isMenuOpen = false
+local currentActiveAbility = "flight" 
+local isOptionsMenu = false
+
+-- KEYBIND SYSTEM
+local keyBindings = {
+    flight = Enum.KeyCode.F,
+    grab = nil,
+    slowtime = nil,
+    superjump = nil,
+    microscopica = nil,
+    superfuerza = nil,
+    walkspeed = nil,
+    regeneracion = nil,
+    xray = nil,
+}
+
+-- ANIMACIÓN DE AGARRE CONGELADA
+local GRAB_ANIMATIONS = {
+    {id = 87088218490918, name = "AGARRE 1"},
+    {id = 75687243220112, name = "AGARRE 2"}
+}
+
+local currentGrabAnimIndex = 1
+local isGrabAnimPlaying = false
+local grabAnimTrack = nil
+
+local assignmentMode = false
+local assignmentAbility = nil
+local lastRightClickTimes = {}
+
+-- GRAB/TELEKINESIS/MULTITELEKINESIS SYSTEM
+local GRAB_DISTANCE = 200
+local THROW_FORCE = 500 
+local GRAB_FOLLOW_SPEED = 200
+local MIN_VEHICLE_MASS = 100
+
+-- TELEKINESIS SYSTEM VARIABLES
+local heldParts = {}
+local isTelekinesisMode = false
+local isMultiTelekinesis = false
+local telekinesisDistance = 15
+local telekinesisMinDistance = 5
+local telekinesisMaxDistance = 100
+local telekinesisDistanceStep = 2
+local MAX_TELEKINESIS_OBJECTS = 5
+
+-- SUPER JUMP SYSTEM (COMPATIBLE CON CUALQUIER JUEGO)
+local superJumpPower = 50
+local minSuperJumpPower = 10
+local maxSuperJumpPower = 500
+local superJumpStep = 10
+local isSuperJumpActive = false
+local superJumpConnection = nil
+
+-- WALKSPEED SYSTEM (COMPATIBLE CON CUALQUIER JUEGO)
+local isWalkSpeedActive = false
+local walkSpeedConnection = nil
+local walkSpeed = 16
+local minWalkSpeed = 16
+local maxWalkSpeed = 1000
+local walkSpeedStep = 50
+
+-- WALKSPEED BAJO SIEMPRE ACTIVO (COMPATIBLE CON CUALQUIER JUEGO)
+local lowWalkSpeedConnection = nil
+local LOW_WALKSPEED = 8
+
+-- ===== SISTEMA DE ANIMACIONES DE NATACIÓN =====
+local swimmingAnimations = {}
+local isSwimming = false
+local originalWalkSpeedDuringSwim = 8
+local currentSwimAnimTrack = nil
+
+-- ===== SISTEMA DE VUELO MEJORADO =====
+local isFlying = false
+local flightSpeed = 50 
+local flightFastMode = false 
+local FLIGHT_NORMAL_SPEED = 50 
+local FLIGHT_FAST_SPEED = 100
+local FLIGHT_MAX_SPEED = 500
+local flightSpeedStepHigh = 70  -- Paso de 70 para ir de 30 a 100
+local flightSpeedStepLow = 10   -- Paso de 10 para ir de 100 en adelante
+local moveState = {forward = 0, backward = 0, left = 0, right = 0, up = 0, down = 0}
+local currentVelocity = Vector3.new(0, 0, 0)
+local currentCF = nil
+local currentRoll = 0
+local maxRoll = 45
+local lerpCoef = 0.3
+local bobbingFrequency = 1
+local bobbingAmplitude = 0.5
+local flightConns = {}
+local currentAnimTrack = nil
+local flightFastAnimTrack = nil
+local lastMoveTime = tick()
+local AUTO_RESET_DELAY = 0.5 -- Tiempo en segundos antes de resetear a 30
+
+-- ===== LENTITUD VISUAL =====
+local isSlowTimeActive = false
+local slowTimeConnection = nil
+local SLOW_TIME_MULTIPLIER = 0.25
+local slowTimeVisualObjects = {}
+local originalSpeeds = {}
+local slowTimeEffects = {}
+
+-- ===== REGENERACIÓN SYSTEM (20 VECES MÁS RÁPIDO) =====
+local isRegeneracionActive = false
+local regeneracionConnection = nil
+local REGENERATION_RATE = 100 -- Aumentado de 5 a 100 (20 veces más rápido)
+local regeneracionVisualEffects = {}
+
+-- ===== X-RAY SYSTEM OPTIMIZADO =====
+local isXRayActive = false
+local xRayConnection = nil
+local xRayVisualEffects = {}
+local originalTransparencies = {}
+local XRAY_TRANSPARENCY = 0.8
+local XRAY_WALL_TRANSPARENCY = 0.9
+local xRayCache = {}
+local xRayUpdateInterval = 0.5
+local lastXRayUpdate = 0
+local xRayActiveObjects = {}
+
+-- VISIÓN MICROSCÓPICA System
+local isMicroscopicaActive = false
+local originalCameraFov = 70
+local MICROSCOPICA_FOV = 120
+
+-- SUPER FUERZA System
+local isSuperFuerzaActive = false
+local superFuerzaMultiplier = 5
+local superFuerzaConnections = {}
+
+-- ===== SISTEMA DE OPCIONES =====
+local ESP_COLOR = Color3.fromRGB(255, 255, 0) -- Cambiado a AMARILLO para tema Superman
+local ESP_ENABLED = false
+local espHighlights = {}
+
+local isAntiSitActive = false
+local antiSitConnections = {}
+local disabledSeats = {}
+
+local isNpcSpyActive = false
+local spyConnection = nil
+local NPC_SPY_COLOR = Color3.fromRGB(255, 140, 0)
+local currentSpyHighlight = nil
+local lastNpcUpdate = 0
+local npcUpdateInterval = 0.1
+
+-- ===== SISTEMA DE CÁMARA MEJORADO =====
+local isCameraSystemActive = false
+local cameraSystemConnections = {}
+local CAMERA_MODES = {
+    "Normal (Roblox Predeterminado)",
+    "Primera Persona (Mirar con Click Derecho)", 
+    "Tercera Persona (Órbita Fija)", 
+    "Cámara Libre (Espectador)"
+}
+local currentCameraMode = 0
+local mouseSensitivity = 0.25
+local freeCamSpeed = 1.5
+local isFreeCamActive = false
+local isChatActive = false
+local angleX = 0
+local angleY = 0
+local isFreeCamFrozen = false
+
+-- TECLAS PARA CÁMARA
+local CAMERA_TOGGLE_KEY = Enum.KeyCode.Asterisk
+local CAMERA_ALTERNATE_KEY = Enum.KeyCode.KeypadMultiply
+local FREEZE_CAMERA_KEY = Enum.KeyCode.F5
+
+-- LISTA DE PODERES SUPER GIRL V2 (SIN INVULNERABILIDAD)
+local menuAbilities = {
+    {name = "VUELO", icon = "🛸", ability = "flight"},
+    {name = "TELEKINESIS/AGARRE", icon = "✋📡", ability = "grab"},
+    {name = "LENTITUD", icon = "⏱️", ability = "slowtime"},
+    {name = "S. SALTO", icon = "⬆️", ability = "superjump"},
+    {name = "VELOCIDAD", icon = "💨", ability = "walkspeed"},
+    {name = "VISIÓN MICROSCÓPICA", icon = "🔬", ability = "microscopica"},
+    {name = "SUPER FUERZA", icon = "💪", ability = "superfuerza"},
+    {name = "REGENERACIÓN", icon = "❤️", ability = "regeneracion"},
+    {name = "VISIÓN X-RAY", icon = "👁️", ability = "xray"},
+}
+
+-- LISTA DE OPCIONES (CON REINICIO DE PERSONAJE)
+local optionsList = {
+    {name = "ESP", icon = "👀", option = "esp"},
+    {name = "ANTI-SIT", icon = "🚫", option = "antisit"},
+    {name = "NPC SPY", icon = "🕵️", option = "npcspy"},
+    {name = "SISTEMA CÁMARA", icon = "📷", option = "camera"},
+    {name = "REINICIAR PERSONAJE", icon = "♻️", option = "respawn"},
+    {name = "DESTRUIR SCRIPT", icon = "❌", option = "deletescript"}
+}
+
+-- GUI Variables
+local menuGui = nil
+local menuButtons = {}
+local speedLabels = {}
+local currentActiveOption = nil
+
+-- ===== FUNCIONES UNIVERSALES =====
+
+local function sendNotification(title, text, iconId)
+    if title == "SUPER GIRL V2" then
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title;
+                Text = text;
+                Duration = 3;
+                Icon = iconId or "rbxassetid://1381009";
+            })
+        end)
+    end
+end
+
+local function connect(event, func)
+    local conn = event:Connect(func)
+    table.insert(allConnections, conn)
+    return conn
+end
+
+local function getKeyName(keyCode)
+    if not keyCode then return "SIN ASIGNAR" end
+    
+    local keyName = keyCode.Name
+    
+    local specialKeys = {
+        ["RightAlt"] = "AltGr",
+        ["LeftAlt"] = "Alt",
+        ["LeftControl"] = "Ctrl",
+        ["RightControl"] = "Ctrl",
+        ["LeftShift"] = "Shift",
+        ["RightShift"] = "Shift",
+        ["KeypadPlus"] = "+",
+        ["KeypadMinus"] = "-",
+        ["KeypadMultiply"] = "*",
+        ["KeypadDivide"] = "/",
+        ["Return"] = "Enter",
+        ["KeypadEnter"] = "Enter",
+        ["BackSpace"] = "Atrás",
+        ["Delete"] = "Supr",
+        ["Insert"] = "Ins",
+        ["Home"] = "Inicio",
+        ["End"] = "Fin",
+        ["PageUp"] = "AvPág",
+        ["PageDown"] = "RepPág",
+        ["Asterisk"] = "*",
+        ["F5"] = "F5",
+    }
+    
+    return specialKeys[keyName] or keyName
+end
+
+-- ===== FUNCIÓN PARA REINICIAR PERSONAJE =====
+local function respawnCharacter()
+    if character and humanoid then
+        humanoid.Health = 0
+        sendNotification("REINICIO", "Personaje reiniciado", "rbxassetid://1381009")
+        task.wait(3)
+        character = player.Character or player.CharacterAdded:Wait()
+        humanoid = character:WaitForChild("Humanoid")
+        hrp = character:WaitForChild("HumanoidRootPart")
+        
+        if isWalkSpeedActive then
+            humanoid.WalkSpeed = walkSpeed
+        else
+            humanoid.WalkSpeed = LOW_WALKSPEED
+        end
+        
+        sendNotification("SUPER GIRL V2", "Personaje reiniciado exitosamente", "rbxassetid://1381009")
+    end
+end
+
+-- ===== SISTEMA DE DETECCIÓN DE NATACIÓN =====
+local function setupSwimmingDetection()
+    local swimCheckConnection = RunService.Heartbeat:Connect(function()
+        if not character or not humanoid then return end
+        
+        local state = humanoid:GetState()
+        local wasSwimming = isSwimming
+        isSwimming = (state == Enum.HumanoidStateType.Swimming)
+        
+        if isSwimming and not wasSwimming then
+            originalWalkSpeedDuringSwim = humanoid.WalkSpeed
+            humanoid.WalkSpeed = 20
+        elseif not isSwimming and wasSwimming then
+            humanoid.WalkSpeed = 8
+        end
+    end)
+    
+    table.insert(allConnections, swimCheckConnection)
+end
+
+-- ===== WALKSPEED BAJO SIEMPRE ACTIVO (COMPATIBLE CON CUALQUIER JUEGO) =====
+local function startLowWalkSpeedLoop()
+    if lowWalkSpeedConnection then lowWalkSpeedConnection:Disconnect() end
+    
+    lowWalkSpeedConnection = RunService.Heartbeat:Connect(function()
+        if character and humanoid and humanoid.Health > 0 then
+            if not isWalkSpeedActive and not isSwimming then
+                humanoid.WalkSpeed = LOW_WALKSPEED
+            end
+        end
+    end)
+    
+    if not isSwimming then
+        humanoid.WalkSpeed = LOW_WALKSPEED
+    end
+end
+
+-- ===== LENTITUD VISUAL CON TEMA SUPERMAN =====
+local function createVisualSlowEffect(target)
+    local visualEffect = {}
+    
+    if target ~= character then
+        local blur = Instance.new("BlurEffect")
+        blur.Size = 8
+        blur.Parent = target:IsA("BasePart") and target or (target:FindFirstChild("HumanoidRootPart") or target)
+        visualEffect.blur = blur
+        
+        local colorCorrection = Instance.new("ColorCorrectionEffect")
+        colorCorrection.TintColor = Color3.fromRGB(0, 51, 160) -- AZUL SUPERMAN
+        colorCorrection.Brightness = 0.1
+        colorCorrection.Contrast = 0.15
+        colorCorrection.Saturation = -0.2
+        colorCorrection.Parent = target:IsA("BasePart") and target or (target:FindFirstChild("HumanoidRootPart") or target)
+        visualEffect.colorCorrection = colorCorrection
+        
+        local highlight = Instance.new("Highlight")
+        highlight.FillColor = Color3.fromRGB(200, 0, 0) -- ROJO
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 0) -- AMARILLO
+        highlight.FillTransparency = 0.7
+        highlight.OutlineTransparency = 0.3
+        highlight.Parent = target
+        visualEffect.highlight = highlight
+    end
+    
+    visualEffect.target = target
+    
+    return visualEffect
+end
+
+local function removeVisualSlowEffect(visualEffect)
+    if visualEffect.blur and visualEffect.blur.Parent then
+        visualEffect.blur:Destroy()
+    end
+    if visualEffect.colorCorrection and visualEffect.colorCorrection.Parent then
+        visualEffect.colorCorrection:Destroy()
+    end
+    if visualEffect.highlight and visualEffect.highlight.Parent then
+        visualEffect.highlight:Destroy()
+    end
+end
+
+local function applyVisualSlowEffects()
+    if not isSlowTimeActive then return end
+    
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local char = otherPlayer.Character
+            local humanoidRootPart = char:FindFirstChild("HumanoidRootPart")
+            
+            if humanoidRootPart and not slowTimeVisualObjects[char] then
+                local distance = (humanoidRootPart.Position - hrp.Position).Magnitude
+                
+                if distance < 150 then
+                    slowTimeVisualObjects[char] = createVisualSlowEffect(char)
+                    
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        if not originalSpeeds[char] then
+                            originalSpeeds[char] = {
+                                walkSpeed = humanoid.WalkSpeed,
+                                jumpPower = humanoid.JumpPower
+                            }
+                        end
+                    end
+                end
+            elseif humanoidRootPart and slowTimeVisualObjects[char] then
+                local distance = (humanoidRootPart.Position - hrp.Position).Magnitude
+                if distance > 200 then
+                    removeVisualSlowEffect(slowTimeVisualObjects[char])
+                    slowTimeVisualObjects[char] = nil
+                end
+            end
+        end
+    end
+    
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not obj.Anchored and obj.Velocity.Magnitude > 5 then
+            if not slowTimeVisualObjects[obj] then
+                local distance = (obj.Position - hrp.Position).Magnitude
+                
+                if distance < 50 then
+                    slowTimeVisualObjects[obj] = createVisualSlowEffect(obj)
+                end
+            elseif slowTimeVisualObjects[obj] then
+                local distance = (obj.Position - hrp.Position).Magnitude
+                if distance > 75 or obj.Velocity.Magnitude < 2 then
+                    removeVisualSlowEffect(slowTimeVisualObjects[obj])
+                    slowTimeVisualObjects[obj] = nil
+                end
+            end
+        end
+    end
+end
+
+local function restoreOriginalVisualSpeeds()
+    for track, speed in pairs(originalSpeeds) do
+        if track and typeof(speed) == "number" then
+            pcall(function()
+                if track:IsA("AnimationTrack") then
+                    track:AdjustSpeed(speed)
+                end
+            end)
+        end
+    end
+  
+    for obj, visualEffect in pairs(slowTimeVisualObjects) do
+        removeVisualSlowEffect(visualEffect)
+    end
+    
+    slowTimeVisualObjects = {}
+    originalSpeeds = {}
+end
+
+local function toggleSlowTime()
+    isSlowTimeActive = not isSlowTimeActive
+    
+    if isSlowTimeActive then
+        if not camera:FindFirstChild("SlowTimeCameraBlur") then
+            local cameraBlur = Instance.new("BlurEffect")
+            cameraBlur.Name = "SlowTimeCameraBlur"
+            cameraBlur.Size = 3
+            cameraBlur.Parent = camera
+            slowTimeEffects.cameraBlur = cameraBlur
+        end
+        
+        if not Lighting:FindFirstChild("SlowTimeGlobalColor") then
+            local globalColor = Instance.new("ColorCorrectionEffect")
+            globalColor.Name = "SlowTimeGlobalColor"
+            globalColor.TintColor = Color3.fromRGB(0, 51, 160) -- AZUL SUPERMAN
+            globalColor.Brightness = 0.05
+            globalColor.Contrast = 0.1
+            globalColor.Saturation = -0.1
+            globalColor.Parent = Lighting
+            slowTimeEffects.globalColor = globalColor
+        end
+        
+        slowTimeConnection = RunService.RenderStepped:Connect(function()
+            applyVisualSlowEffects()
+        end)
+        
+    else
+        if slowTimeEffects.cameraBlur then
+            slowTimeEffects.cameraBlur:Destroy()
+            slowTimeEffects.cameraBlur = nil
+        end
+        
+        if slowTimeEffects.globalColor then
+            slowTimeEffects.globalColor:Destroy()
+            slowTimeEffects.globalColor = nil
+        end
+        
+        restoreOriginalVisualSpeeds()
+        
+        if slowTimeConnection then
+            slowTimeConnection:Disconnect()
+            slowTimeConnection = nil
+        end
+    end
+    
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+-- ===== REGENERACIÓN SYSTEM CON TEMA SUPERMAN =====
+local function createRegeneracionVisual()
+    if not character then return nil end
+    
+    local visualEffects = {}
+    
+    local particleEmitter = Instance.new("ParticleEmitter")
+    particleEmitter.Name = "RegeneracionParticles"
+    particleEmitter.Parent = hrp
+    particleEmitter.Color = ColorSequence.new(Color3.fromRGB(255, 255, 0)) -- AMARILLO
+    particleEmitter.Size = NumberSequence.new(0.5)
+    particleEmitter.Transparency = NumberSequence.new(0.5)
+    particleEmitter.Lifetime = NumberRange.new(1)
+    particleEmitter.Rate = 20
+    particleEmitter.Speed = NumberRange.new(2)
+    particleEmitter.SpreadAngle = Vector2.new(90, 90)
+    particleEmitter.Acceleration = Vector3.new(0, 5, 0)
+    
+    visualEffects.particles = particleEmitter
+    
+    local pointLight = Instance.new("PointLight")
+    pointLight.Name = "RegeneracionLight"
+    pointLight.Color = Color3.fromRGB(255, 255, 0) -- AMARILLO
+    pointLight.Brightness = 1.5
+    pointLight.Range = 10
+    pointLight.Parent = hrp
+    
+    visualEffects.light = pointLight
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "RegeneracionGlow"
+    highlight.FillColor = Color3.fromRGB(200, 0, 0) -- ROJO
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 0) -- AMARILLO
+    highlight.FillTransparency = 0.7
+    highlight.OutlineTransparency = 0.3
+    highlight.Parent = hrp
+    
+    visualEffects.highlight = highlight
+    
+    return visualEffects
+end
+
+local function removeRegeneracionVisual(visualEffects)
+    if visualEffects.particles then
+        visualEffects.particles:Destroy()
+    end
+    if visualEffects.light then
+        visualEffects.light:Destroy()
+    end
+    if visualEffects.highlight then
+        visualEffects.highlight:Destroy()
+    end
+end
+
+local function toggleRegeneracion()
+    isRegeneracionActive = not isRegeneracionActive
+    
+    if isRegeneracionActive then
+        regeneracionVisualEffects = createRegeneracionVisual()
+        
+        regeneracionConnection = RunService.Heartbeat:Connect(function(dt)
+            if not isRegeneracionActive or not character or not humanoid then return end
+            
+            if humanoid.Health < humanoid.MaxHealth then
+                local newHealth = humanoid.Health + (REGENERATION_RATE * dt)
+                humanoid.Health = math.min(newHealth, humanoid.MaxHealth)
+            end
+        end)
+        
+    else
+        if regeneracionVisualEffects then
+            removeRegeneracionVisual(regeneracionVisualEffects)
+            regeneracionVisualEffects = {}
+        end
+        
+        if regeneracionConnection then
+            regeneracionConnection:Disconnect()
+            regeneracionConnection = nil
+        end
+    end
+    
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+-- ===== X-RAY SYSTEM OPTIMIZADO =====
+local function isWallOrObstacle(part)
+    if not part then return false end
+    
+    if xRayCache[part] ~= nil then
+        return xRayCache[part]
+    end
+    
+    local partName = part.Name:lower()
+    local wallKeywords = {
+        "wall", "floor", "ceiling", "roof", "ground", "platform",
+        "platform", "block", "brick", "stone", "concrete", "metal",
+        "wood", "glass", "barrier", "fence", "gate", "door",
+        "window", "pillar", "column", "beam", "platform"
+    }
+    
+    for _, keyword in ipairs(wallKeywords) do
+        if partName:find(keyword) then
+            xRayCache[part] = true
+            return true
+        end
+    end
+    
+    if part.Transparency > 0.3 then
+        xRayCache[part] = false
+        return false
+    end
+    
+    if part:IsA("Part") and part.Anchored then
+        xRayCache[part] = true
+        return true
+    end
+    
+    xRayCache[part] = false
+    return false
+end
+
+local function applyXRayToObject(obj)
+    if not obj or not obj:IsA("BasePart") then return end
+    
+    if xRayActiveObjects[obj] then return end
+    
+    if not originalTransparencies[obj] then
+        originalTransparencies[obj] = obj.Transparency
+    end
+    
+    if isWallOrObstacle(obj) then
+        obj.Transparency = XRAY_WALL_TRANSPARENCY
+    else
+        obj.Transparency = XRAY_TRANSPARENCY
+    end
+    
+    if obj:IsA("Part") then
+        obj.CastShadow = false
+        
+        if not xRayVisualEffects[obj] then
+            local outline = Instance.new("SelectionBox")
+            outline.Name = "XRayOutline"
+            outline.Adornee = obj
+            outline.Color3 = Color3.fromRGB(255, 255, 0) -- AMARILLO para tema Superman
+            outline.Transparency = 0.7
+            outline.LineThickness = 0.05
+            outline.Parent = obj
+            xRayVisualEffects[obj] = outline
+        end
+    end
+    
+    xRayActiveObjects[obj] = true
+end
+
+local function removeXRayFromObject(obj)
+    if not obj then return end
+    
+    if not xRayActiveObjects[obj] then return end
+    
+    if originalTransparencies[obj] then
+        obj.Transparency = originalTransparencies[obj]
+        originalTransparencies[obj] = nil
+    end
+    
+    if obj:IsA("Part") then
+        obj.CastShadow = true
+    end
+    
+    if xRayVisualEffects[obj] then
+        xRayVisualEffects[obj]:Destroy()
+        xRayVisualEffects[obj] = nil
+    end
+    
+    xRayActiveObjects[obj] = nil
+end
+
+local function updateXRay()
+    if not isXRayActive then return end
+    
+    local currentTime = tick()
+    if currentTime - lastXRayUpdate < xRayUpdateInterval then
+        return
+    end
+    lastXRayUpdate = currentTime
+    
+    local cameraPos = camera.CFrame.Position
+    local maxDistance = 50
+    
+    for obj, _ in pairs(xRayActiveObjects) do
+        if obj and obj.Parent then
+            local distance = (obj.Position - cameraPos).Magnitude
+            if distance > maxDistance then
+                removeXRayFromObject(obj)
+            end
+        else
+            xRayActiveObjects[obj] = nil
+            if originalTransparencies[obj] then
+                originalTransparencies[obj] = nil
+            end
+        end
+    end
+    
+    local regionSize = Vector3.new(maxDistance * 2, maxDistance * 2, maxDistance * 2)
+    local region = Region3.new(cameraPos - regionSize/2, cameraPos + regionSize/2)
+    
+    local partsInRegion = Workspace:FindPartsInRegion3(region, nil, math.huge)
+    
+    for _, obj in ipairs(partsInRegion) do
+        if obj:IsA("BasePart") then
+            local distance = (obj.Position - cameraPos).Magnitude
+            
+            if distance < maxDistance then
+                local raycastResult = Workspace:Raycast(cameraPos, (obj.Position - cameraPos).Unit * distance)
+                
+                if raycastResult and raycastResult.Instance == obj then
+                    applyXRayToObject(obj)
+                elseif distance > maxDistance / 2 then
+                    if isWallOrObstacle(obj) then
+                        applyXRayToObject(obj)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function toggleXRay()
+    isXRayActive = not isXRayActive
+    
+    if isXRayActive then
+        xRayCache = {}
+        
+        local colorCorrection = Instance.new("ColorCorrectionEffect")
+        colorCorrection.Name = "XRayColorCorrection"
+        colorCorrection.TintColor = Color3.fromRGB(0, 100, 255) -- AZUL SUPERMAN
+        colorCorrection.Brightness = 0.1
+        colorCorrection.Contrast = 0.2
+        colorCorrection.Saturation = -0.3
+        colorCorrection.Parent = camera
+        
+        xRayVisualEffects.cameraEffect = colorCorrection
+        
+        xRayConnection = RunService.Heartbeat:Connect(function()
+            updateXRay()
+        end)
+        
+    else
+        if xRayVisualEffects.cameraEffect then
+            xRayVisualEffects.cameraEffect:Destroy()
+            xRayVisualEffects.cameraEffect = nil
+        end
+        
+        for obj, _ in pairs(originalTransparencies) do
+            if obj and obj.Parent then
+                removeXRayFromObject(obj)
+            end
+        end
+        
+        originalTransparencies = {}
+        xRayActiveObjects = {}
+        xRayCache = {}
+        
+        for obj, effect in pairs(xRayVisualEffects) do
+            if obj ~= "cameraEffect" and effect then
+                effect:Destroy()
+            end
+        end
+        xRayVisualEffects = {}
+        
+        if xRayConnection then
+            xRayConnection:Disconnect()
+            xRayConnection = nil
+        end
+    end
+    
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+-- ===== ANIMATION FUNCTIONS =====
+
+local function stopAllAnimations(hum)
+    for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+        track:Stop(0)
+    end
+end
+
+local function playAnimation(animId, startTime, speed)
+    if currentAnimTrack then
+        currentAnimTrack:Stop(0.1)
+        currentAnimTrack = nil
+    end
+
+    for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. tostring(animId)
+    currentAnimTrack = humanoid:LoadAnimation(anim)
+    currentAnimTrack:Play()
+    currentAnimTrack.TimePosition = startTime
+    currentAnimTrack:AdjustSpeed(speed)
+end
+
+-- ===== ANIMACIONES DE AGARRE =====
+local function playGrabAnimation()
+    if isGrabAnimPlaying and grabAnimTrack then
+        grabAnimTrack:Stop(0.1)
+        isGrabAnimPlaying = false
+        grabAnimTrack = nil
+    end
+    
+    stopAllAnimations(humanoid)
+    local animate = character:FindFirstChild("Animate")
+    if animate then animate.Disabled = true end
+    
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. tostring(GRAB_ANIMATIONS[currentGrabAnimIndex].id)
+    grabAnimTrack = humanoid:LoadAnimation(anim)
+    grabAnimTrack:Play()
+    grabAnimTrack:AdjustSpeed(0)
+    isGrabAnimPlaying = true
+end
+
+local function stopGrabAnimation()
+    if isGrabAnimPlaying and grabAnimTrack then
+        grabAnimTrack:Stop(0.1)
+        isGrabAnimPlaying = false
+        grabAnimTrack = nil
+    end
+    
+    local animate = character:FindFirstChild("Animate")
+    if animate then animate.Disabled = false end
+end
+
+local function switchGrabAnimation()
+    currentGrabAnimIndex = currentGrabAnimIndex + 1
+    if currentGrabAnimIndex > #GRAB_ANIMATIONS then
+        currentGrabAnimIndex = 1
+    end
+    
+    if #heldParts > 0 and not isTelekinesisMode and not isMultiTelekinesis then
+        playGrabAnimation()
+    end
+    
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+local function stopAnimation()
+    if currentAnimTrack then
+        currentAnimTrack:Stop(0.1)
+        currentAnimTrack = nil
+    end
+    for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+end
+
+local function disableDefaultAnimate()
+    local animate = character:FindFirstChild("Animate")
+    if animate then animate.Disabled = true end
+end
+
+local function enableDefaultAnimate()
+    local animate = character:FindFirstChild("Animate")
+    if animate then animate.Disabled = false end
+end
+
+-- ===== SUPER FUERZA SYSTEM =====
+local function applySuperFuerzaDamage(hitPart, damageMultiplier)
+    if not hitPart or not hitPart.Parent then return end
+    
+    local characterModel = hitPart.Parent
+    local humanoid = characterModel:FindFirstChildOfClass("Humanoid")
+    
+    if humanoid then
+        local currentHealth = humanoid.Health
+        local damage = currentHealth * 0.3 * damageMultiplier
+        
+        humanoid:TakeDamage(damage)
+    else
+        if hitPart:IsA("BasePart") and not hitPart.Anchored then
+            local root = hitPart.AssemblyRootPart or hitPart
+            root:ApplyImpulse(root.Position - hrp.Position * damageMultiplier * 100)
+        end
+    end
+end
+
+local function toggleSuperFuerza()
+    isSuperFuerzaActive = not isSuperFuerzaActive
+    
+    if isSuperFuerzaActive then
+        for _, conn in pairs(superFuerzaConnections) do
+            if conn then conn:Disconnect() end
+        end
+        superFuerzaConnections = {}
+        
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        
+        local function handleTouch(otherPart)
+            if not isSuperFuerzaActive then return end
+            if otherPart.Parent == character then return end
+            
+            local hitVelocity = humanoidRootPart.AssemblyLinearVelocity
+            if hitVelocity.Magnitude > 10 then
+                applySuperFuerzaDamage(otherPart, superFuerzaMultiplier)
+            end
+        end
+        
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local conn = part.Touched:Connect(handleTouch)
+                table.insert(superFuerzaConnections, conn)
+            end
+        end
+    else
+        for _, conn in pairs(superFuerzaConnections) do
+            if conn then conn:Disconnect() end
+        end
+        superFuerzaConnections = {}
+    end
+end
+
+local function adjustSuperFuerza(amount)
+    superFuerzaMultiplier = math.clamp(superFuerzaMultiplier + amount, 1, 20)
+    
+    if isSuperFuerzaActive then
+        -- Sin notificación
+    end
+end
+
+-- ===== VISIÓN MICROSCÓPICA SYSTEM =====
+local function toggleMicroscopica()
+    isMicroscopicaActive = not isMicroscopicaActive
+    
+    if isMicroscopicaActive then
+        originalCameraFov = camera.FieldOfView
+        camera.FieldOfView = MICROSCOPICA_FOV
+    else
+        camera.FieldOfView = originalCameraFov
+    end
+end
+
+-- ===== WALKSPEED SYSTEM (COMPATIBLE CON CUALQUIER JUEGO) =====
+local function startWalkSpeedLoop()
+    if walkSpeedConnection then walkSpeedConnection:Disconnect() end
+    
+    walkSpeedConnection = RunService.Heartbeat:Connect(function()
+        if character and humanoid and humanoid.Health > 0 then
+            humanoid.WalkSpeed = walkSpeed
+        end
+    end)
+    
+    humanoid.WalkSpeed = walkSpeed
+    isWalkSpeedActive = true
+    
+    if lowWalkSpeedConnection then
+        lowWalkSpeedConnection:Disconnect()
+        lowWalkSpeedConnection = nil
+    end
+end
+
+local function stopWalkSpeedLoop()
+    if walkSpeedConnection then 
+        walkSpeedConnection:Disconnect()
+        walkSpeedConnection = nil
+    end
+    
+    humanoid.WalkSpeed = 16
+    isWalkSpeedActive = false
+    
+    startLowWalkSpeedLoop()
+end
+
+local function toggleWalkSpeedLoop()
+    if isWalkSpeedActive then
+        stopWalkSpeedLoop()
+    else
+        startWalkSpeedLoop()
+    end
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+local function adjustWalkSpeed(amount)
+    walkSpeed = math.clamp(walkSpeed + amount, minWalkSpeed, maxWalkSpeed)
+    
+    if isWalkSpeedActive then
+        humanoid.WalkSpeed = walkSpeed
+    end
+    
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+-- ===== SISTEMA DE OPCIONES =====
+local function toggleESP()
+    ESP_ENABLED = not ESP_ENABLED
+    if ESP_ENABLED then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Humanoid") and obj.Parent ~= character then
+                local hl = Instance.new("Highlight", CoreGui)
+                hl.Adornee = obj.Parent
+                hl.FillColor = ESP_COLOR -- AMARILLO para tema Superman
+                hl.FillTransparency = 0.5
+                hl.OutlineColor = Color3.fromRGB(200, 0, 0) -- ROJO
+                table.insert(espHighlights, hl)
+            end
+        end
+    else
+        for _, hl in pairs(espHighlights) do hl:Destroy() end
+        espHighlights = {}
+    end
+end
+
+local function toggleAntiSit()
+    isAntiSitActive = not isAntiSitActive
+
+    if isAntiSitActive then
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj:IsA("Seat") or obj:IsA("VehicleSeat") then
+                obj.Disabled = true
+                obj.CanTouch = false
+                disabledSeats[obj] = true
+            end
+        end
+
+        antiSitConnections.DescendantAdded = connect(Workspace.DescendantAdded, function(obj)
+            if (obj:IsA("Seat") or obj:IsA("VehicleSeat")) and not disabledSeats[obj] then
+                task.wait(0.05)
+                obj.Disabled = true
+                obj.CanTouch = false
+                disabledSeats[obj] = true
+            end
+        end)
+        
+    else
+        for _, connection in pairs(antiSitConnections) do
+            if connection and connection.Connected then
+                connection:Disconnect()
+            end
+        end
+        antiSitConnections = {}
+        
+        for seat, _ in pairs(disabledSeats) do
+            if seat and seat.Parent then
+                seat.Disabled = false
+                seat.CanTouch = true
+            end
+        end
+        disabledSeats = {}
+    end
+end
+
+local function toggleNpcSpy()
+    isNpcSpyActive = not isNpcSpyActive
+    if isNpcSpyActive then
+        
+        if not currentSpyHighlight then
+            currentSpyHighlight = Instance.new("Highlight", CoreGui)
+            currentSpyHighlight.FillColor = Color3.fromRGB(200, 0, 0) -- ROJO
+            currentSpyHighlight.OutlineColor = Color3.fromRGB(255, 255, 0) -- AMARILLO
+            currentSpyHighlight.FillTransparency = 0.6
+            currentSpyHighlight.OutlineTransparency = 0
+            currentSpyHighlight.Enabled = false
+        end
+        
+        camera.CameraSubject = humanoid
+        
+        spyConnection = RunService.RenderStepped:Connect(function()
+            local currentTime = tick()
+            
+            if currentTime - lastNpcUpdate < npcUpdateInterval then
+                return
+            end
+            lastNpcUpdate = currentTime
+            
+            if not isNpcSpyActive then return end
+            
+            local closestNPC = nil
+            local dist = math.huge
+            
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if obj:IsA("Humanoid") and obj.Parent ~= character then
+                    local targetChar = obj.Parent
+                    
+                    if not Players:GetPlayerFromCharacter(targetChar) then
+                        local targetHrp = targetChar:FindFirstChild("HumanoidRootPart")
+                        if targetHrp then
+                            local d = (targetHrp.Position - hrp.Position).Magnitude
+                            if d < dist and d < 500 then
+                                dist = d
+                                closestNPC = targetChar
+                            end
+                        end
+                    end
+                end
+            end
+            
+            if closestNPC then 
+                currentSpyHighlight.Adornee = closestNPC
+                currentSpyHighlight.Enabled = true
+            else 
+                currentSpyHighlight.Enabled = false
+            end
+        end)
+    else
+        if spyConnection then spyConnection:Disconnect() end
+        if currentSpyHighlight then 
+            currentSpyHighlight:Destroy()
+            currentSpyHighlight = nil
+        end
+        camera.CameraSubject = humanoid
+    end
+end
+
+-- ===== LIMPIEZA =====
+local function deleteScript()
+    if isGrabAnimPlaying then
+        stopGrabAnimation()
+    end
+    
+    for _, conn in ipairs(allConnections) do
+        if conn and conn.Connected then conn:Disconnect() end
+    end
+    if superJumpConnection then superJumpConnection:Disconnect() end
+    if walkSpeedConnection then walkSpeedConnection:Disconnect() end
+    if lowWalkSpeedConnection then lowWalkSpeedConnection:Disconnect() end
+    if slowTimeConnection then slowTimeConnection:Disconnect() end
+    if spyConnection then spyConnection:Disconnect() end
+    if regeneracionConnection then regeneracionConnection:Disconnect() end
+    if xRayConnection then xRayConnection:Disconnect() end
+    
+    for _, conn in pairs(superFuerzaConnections) do
+        if conn and conn.Connected then conn:Disconnect() end
+    end
+    superFuerzaConnections = {}
+    
+    for _, conn in pairs(antiSitConnections) do
+        if conn and conn.Connected then conn:Disconnect() end
+    end
+    antiSitConnections = {}
+    
+    if isCameraSystemActive then
+        camera.CameraType = Enum.CameraType.Custom
+        camera.CameraSubject = humanoid
+    end
+    
+    if isSlowTimeActive then
+        restoreOriginalVisualSpeeds()
+        
+        if slowTimeEffects.cameraBlur then
+            slowTimeEffects.cameraBlur:Destroy()
+        end
+        if slowTimeEffects.globalColor then
+            slowTimeEffects.globalColor:Destroy()
+        end
+    end
+    
+    if isRegeneracionActive then
+        if regeneracionVisualEffects then
+            removeRegeneracionVisual(regeneracionVisualEffects)
+        end
+    end
+    
+    if isXRayActive then
+        toggleXRay()
+    end
+    
+    Workspace.Gravity = originalGravity
+    
+    if isFlying then
+        stopFlying()
+    end
+    
+    if isMicroscopicaActive then
+        camera.FieldOfView = originalCameraFov
+    end
+    
+    if ESP_ENABLED then 
+        for _, hl in pairs(espHighlights) do hl:Destroy() end
+    end
+    
+    for _, partData in pairs(heldParts) do
+        if partData.part and partData.part.Parent then
+            local root = partData.part.AssemblyRootPart or partData.part
+            if partData.humanoid then
+                partData.humanoid.PlatformStand = false
+            end
+            if not root.Anchored then
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
+    
+    heldParts = {}
+    allConnections = {}
+    if menuGui then menuGui:Destroy() end
+    if currentSpyHighlight then currentSpyHighlight:Destroy() end
+    
+    camera.CameraType = Enum.CameraType.Custom
+    camera.CameraSubject = humanoid
+    script:Destroy()
+end
+
+-- ===== SISTEMA DE AGARRE =====
+local function emptyVehicleSeats(vehicleModel)
+    if not vehicleModel or not vehicleModel.Parent then return nil end
+    
+    local vehicleData = {
+        model = vehicleModel,
+        seats = {},
+        originalProperties = {}
+    }
+    
+    for _, seat in ipairs(vehicleModel:GetDescendants()) do
+        if seat:IsA("VehicleSeat") or seat:IsA("Seat") then
+            local seatData = {
+                seat = seat,
+                originalOccupant = seat.Occupant,
+                originalCanCollide = seat.CanCollide,
+                originalDisabled = seat.Disabled
+            }
+            
+            table.insert(vehicleData.seats, seatData)
+            
+            seat.CanCollide = false
+            seat.Disabled = true
+            
+            if seat.Occupant then
+                local occupantHumanoid = seat.Occupant:FindFirstChildOfClass("Humanoid")
+                if occupantHumanoid then
+                    occupantHumanoid.Sit = false
+                    occupantHumanoid.PlatformStand = true
+                end
+                seat.Occupant = nil
+            end
+        end
+    end
+    
+    return vehicleData
+end
+
+local function restoreVehicleSeats(vehicleData)
+    if not vehicleData or not vehicleData.model then return end
+    
+    for _, seatData in ipairs(vehicleData.seats) do
+        local seat = seatData.seat
+        if seat and seat.Parent then
+            seat.CanCollide = seatData.originalCanCollide
+            seat.Disabled = seatData.originalDisabled
+        end
+    end
+end
+
+local function stopGrabbing()
+    stopGrabAnimation()
+    
+    for _, partData in pairs(heldParts) do
+        if partData.part and partData.part.Parent then
+            local root = partData.part.AssemblyRootPart or partData.part
+            if not root.Anchored then
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end
+            
+            if partData.humanoid then
+                partData.humanoid.PlatformStand = false
+            end
+            
+            if partData.vehicleData then
+                restoreVehicleSeats(partData.vehicleData)
+            end
+        end
+    end
+    
+    heldParts = {}
+    isTelekinesisMode = false
+    isMultiTelekinesis = false
+end
+
+local function movePartVelocity(part, targetPos)
+    if not part or part.Anchored then return end
+    
+    local root = part.AssemblyRootPart or part
+    
+    local direction = (targetPos - root.Position)
+    local velocity = direction * 15
+
+    if velocity.Magnitude > GRAB_FOLLOW_SPEED then
+        velocity = velocity.Unit * GRAB_FOLLOW_SPEED
+    end
+    
+    root.AssemblyLinearVelocity = velocity
+    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+end
+
+local function startGrabbing(part)
+    if isMultiTelekinesis and #heldParts >= MAX_TELEKINESIS_OBJECTS then
+        return false
+    end
+    
+    for _, partData in pairs(heldParts) do
+        if partData.part == part then
+            return false
+        end
+    end
+    
+    local root = part.AssemblyRootPart or part
+    root.Anchored = false
+    
+    local isCharacter = false
+    local humanoidRef = nil
+    local characterModel = part.Parent
+    local vehicleData = nil
+    
+    if characterModel:IsA("Model") then
+        humanoidRef = characterModel:FindFirstChildOfClass("Humanoid")
+        if humanoidRef then
+            isCharacter = true
+            humanoidRef.PlatformStand = true
+        end
+    end
+    
+    local partData = {
+        part = part,
+        root = root,
+        lastPosition = part.Position,
+        isCharacter = isCharacter,
+        humanoid = humanoidRef,
+        vehicleData = vehicleData
+    }
+    
+    table.insert(heldParts, partData)
+    
+    if not isTelekinesisMode and not isMultiTelekinesis then
+        playGrabAnimation()
+    end
+    
+    return true
+end
+
+local function throwPart(partData)
+    if not partData or not partData.part then return end
+
+    local partToThrow = partData.part
+    local root = partData.root or partToThrow.AssemblyRootPart or partToThrow
+    local camLookVector = camera.CFrame.LookVector
+    
+    root.Anchored = false
+    root.CanCollide = true
+    
+    if partData.humanoid then
+        partData.humanoid.PlatformStand = false
+    end
+    
+    if partData.vehicleData then
+        restoreVehicleSeats(partData.vehicleData)
+    end
+    
+    local mass = root.AssemblyMass or 1
+    root:ApplyImpulse(camLookVector * THROW_FORCE * mass)
+end
+
+local function throwAllParts()
+    if #heldParts == 0 then return end
+    
+    for _, partData in pairs(heldParts) do
+        throwPart(partData)
+    end
+    
+    heldParts = {}
+    stopGrabAnimation()
+end
+
+local function getGrabTarget(targetPart)
+    if not targetPart or targetPart.Locked then return nil end
+    
+    local part = targetPart
+    local model = part:FindFirstAncestorOfClass("Model")
+    
+    if model then
+        local playerFromModel = Players:GetPlayerFromCharacter(model)
+        if playerFromModel and playerFromModel ~= player then
+            local hrp = model:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                return hrp
+            end
+        end
+        
+        local humanoid = model:FindFirstChildOfClass("Humanoid")
+        if humanoid and not Players:GetPlayerFromCharacter(model) then
+            local hrp = model:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                return hrp
+            end
+        end
+        
+        if model:FindFirstAncestor(player.Name) == character then return nil end
+        
+        if model.PrimaryPart and model.PrimaryPart:IsA("BasePart") and not model.PrimaryPart.Anchored then
+            part = model.PrimaryPart
+        end
+    end
+    
+    if part.AssemblyRootPart and not part.AssemblyRootPart.Anchored then
+        part = part.AssemblyRootPart
+    end
+    
+    if part:IsA("BasePart") and not part.Anchored and part.Parent then
+        if part:FindFirstAncestor(player.Name) == character then return nil end
+        return part
+    end
+
+    return nil
+end
+
+local function directGrab()
+    if #heldParts > 0 and not isMultiTelekinesis then
+        stopGrabbing()
+    else
+        local target = mouse.Target
+        local distance = (target and hrp and (target.Position - hrp.Position).Magnitude) or math.huge
+        
+        local finalTarget = getGrabTarget(target)
+
+        if finalTarget and distance <= GRAB_DISTANCE then
+            if startGrabbing(finalTarget) then
+                -- Sin notificación
+            end
+        end
+    end
+end
+
+local function toggleTelekinesisMode()
+    if #heldParts == 0 then
+        return
+    end
+    
+    isTelekinesisMode = not isTelekinesisMode
+    
+    if isTelekinesisMode then
+        stopGrabAnimation()
+    else
+        if #heldParts > 0 and not isMultiTelekinesis then
+            playGrabAnimation()
+        end
+    end
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+local function toggleMultiTelekinesis()
+    if #heldParts == 0 and not isMultiTelekinesis then
+        return
+    end
+    
+    isMultiTelekinesis = not isMultiTelekinesis
+    
+    if isMultiTelekinesis then
+        isTelekinesisMode = false
+        stopGrabAnimation()
+    end
+    if updateSpeedLabels then updateSpeedLabels() end
+end
+
+-- ===== SUPER JUMP SYSTEM (COMPATIBLE CON CUALQUIER JUEGO) =====
+local function toggleSuperJump()
+    isSuperJumpActive = not isSuperJumpActive
+    
+    if isSuperJumpActive then
+        if superJumpConnection then superJumpConnection:Disconnect() end
+        
+        superJumpConnection = connect(RunService.Heartbeat, function()
+            if isSuperJumpActive and character and humanoid then
+                humanoid.UseJumpPower = true
+                humanoid.JumpPower = superJumpPower
+                
+                if humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+                    local rootPart = character:FindFirstChild("HumanoidRootPart")
+                    if rootPart then
+                        rootPart:ApplyImpulse(Vector3.new(0, superJumpPower * 2, 0))
+                    end
+                end
+            end
+        end)
+    else
+        if superJumpConnection then superJumpConnection:Disconnect() end
+        humanoid.JumpPower = 50
+        humanoid.UseJumpPower = true
+    end
+end
+
+-- ===== FLIGHT SYSTEM MEJORADO CON 2 MODOS =====
+local function playFlightFastAnimation()
+    if flightFastAnimTrack then
+        flightFastAnimTrack:Stop(0.1)
+        flightFastAnimTrack = nil
+    end
+    
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://120303626369803"
+    flightFastAnimTrack = humanoid:LoadAnimation(anim)
+    flightFastAnimTrack:Play()
+    flightFastAnimTrack:AdjustSpeed(1.5)
+end
+
+local function stopFlightFastAnimation()
+    if flightFastAnimTrack then
+        flightFastAnimTrack:Stop(0.1)
+        flightFastAnimTrack = nil
+    end
+end
+
+local function startFlying()
+    if isFlying then return end
+    isFlying = true
+
+    originalGravity = Workspace.Gravity
+    Workspace.Gravity = 15
+    humanoid.PlatformStand = true
+
+    playAnimation(102620389167016, 4, 1)
+
+    local gyro = Instance.new("BodyGyro")
+    gyro.Name = "FlyGyro"
+    gyro.Parent = hrp
+    gyro.P = 90000
+    gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyro.CFrame = hrp.CFrame
+
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = "FlyVelocity"
+    bv.Parent = hrp
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bv.Velocity = Vector3.new(0, 0, 0)
+
+    currentVelocity = Vector3.new(0, 0, 0)
+    local lastUpdate = tick()
+    lastMoveTime = tick()
+
+    local flightUpdate = connect(RunService.RenderStepped, function(deltaTime)
+        if not character or not hrp or not humanoid then return end
+        
+        local cam = Workspace.CurrentCamera
+        local now = tick()
+        local delta = now - lastUpdate
+        lastUpdate = now
+        
+        local fwd = moveState.forward - moveState.backward
+        local side = moveState.right - moveState.left
+        
+        local moveDirection = Vector3.new(0, 0, 0)
+        
+        if fwd ~= 0 then
+            moveDirection = moveDirection + (cam.CFrame.LookVector * fwd)
+        end
+        
+        if side ~= 0 then
+            moveDirection = moveDirection + (cam.CFrame.RightVector * side)
+        end
+        
+        if moveDirection.Magnitude > 0 then
+            moveDirection = moveDirection.Unit
+        end
+        
+        local vertical = 0
+        if moveState.up > 0 then
+            vertical = 1
+        elseif moveState.down > 0 then
+            vertical = -1
+        end
+        
+        local desiredVelocity = Vector3.new(0, 0, 0)
+        
+        if moveDirection.Magnitude > 0 then
+            desiredVelocity = desiredVelocity + (moveDirection * flightSpeed)
+        end
+        
+        if vertical ~= 0 then
+            desiredVelocity = desiredVelocity + Vector3.new(0, vertical * flightSpeed * 0.6, 0)
+        end
+        
+        local isMoving = desiredVelocity.Magnitude > 0.1
+        
+        if isMoving then
+            lastMoveTime = now
+            currentVelocity = currentVelocity:Lerp(desiredVelocity, 0.15)
+            
+            local desiredCF
+            if fwd > 0 then
+                desiredCF = cam.CFrame * CFrame.Angles(math.rad(0), 0, math.rad(currentRoll * 0.5))
+            elseif fwd < 0 then
+                desiredCF = cam.CFrame * CFrame.Angles(math.rad(30), 0, math.rad(currentRoll * 0.5))
+            else
+                desiredCF = cam.CFrame
+            end
+            
+            if currentCF then
+                currentCF = currentCF:Lerp(desiredCF, 0.25)
+            else
+                currentCF = desiredCF
+            end
+            gyro.CFrame = currentCF
+        else
+            currentVelocity = currentVelocity:Lerp(Vector3.new(0, 0, 0), 0.3)
+            
+            -- AUTO RESET A 30 DESPUÉS DE 0.5 SEGUNDOS SIN MOVERSE
+            if now - lastMoveTime > AUTO_RESET_DELAY then
+                if flightSpeed > FLIGHT_NORMAL_SPEED then
+                    flightSpeed = FLIGHT_NORMAL_SPEED
+                    flightFastMode = false
+                    stopFlightFastAnimation()
+                    if updateSpeedLabels then updateSpeedLabels() end
+                end
+            end
+        end
+        
+        bv.Velocity = currentVelocity
+    end)
+
+    table.insert(flightConns, flightUpdate)
+    
+    local function onFlyInputBegan(input, gameProc)
+        if gameProc then return end
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            local key = input.KeyCode
+            if key == Enum.KeyCode.W then
+                moveState.forward = 1
+                playAnimation(121652468298377, 15, 0)
+            elseif key == Enum.KeyCode.S then
+                moveState.backward = 1
+                playAnimation(94942486115057, 4, 1)
+            elseif key == Enum.KeyCode.A then
+                moveState.left = 1
+            elseif key == Enum.KeyCode.D then
+                moveState.right = 1
+            elseif key == Enum.KeyCode.LeftAlt then
+                moveState.up = 1
+            elseif key == Enum.KeyCode.RightAlt then
+                moveState.down = 1
+            end
+        end
+    end
+    local flyBegan = UserInputService.InputBegan:Connect(onFlyInputBegan)
+    table.insert(flightConns, flyBegan)
+    
+    local function onFlyInputEnded(input, gameProc)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            local key = input.KeyCode
+            if key == Enum.KeyCode.W then
+                moveState.forward = 0
+                playAnimation(94942486115057, 4, 1)
+            elseif key == Enum.KeyCode.S then
+                moveState.backward = 0
+                playAnimation(94942486115057, 4, 1)
+            elseif key == Enum.KeyCode.A then
+                moveState.left = 0
+            elseif key == Enum.KeyCode.D then
+                moveState.right = 0
+            elseif key == Enum.KeyCode.LeftAlt then
+                moveState.up = 0
+            elseif key == Enum.KeyCode.RightAlt then
+                moveState.down = 0
+            end
+        end
+    end
+    
+    local flyEnded = UserInputService.InputEnded:Connect(onFlyInputEnded)
+    table.insert(flightConns, flyEnded)
+end
+
+local function stopFlying()
+    if not isFlying then return end
+    isFlying = false
+    flightFastMode = false
+    
+    for _, conn in ipairs(flightConns) do
+        if conn.Connected then conn:Disconnect() end
+    end
+    flightConns = {}
+
+    moveState = {forward=0, backward=0, left=0, right=0, up=0, down=0}
+    
+    Workspace.Gravity = originalGravity
+    
+    humanoid.PlatformStand = false
+    stopAnimation()
+    stopFlightFastAnimation()
+    enableDefaultAnimate()
+
+    if hrp:FindFirstChild("FlyGyro") then hrp.FlyGyro:Destroy() end
+    if hrp:FindFirstChild("FlyVelocity") then hrp.FlyVelocity:Destroy() end
+end
+
+-- Main Activation Function
+local function activatePower()
+    if not currentActiveAbility then return end
+    local ca = currentActiveAbility
+    
+    if ca == "flight" then
+        if isFlying then stopFlying() else startFlying() end
+    elseif ca == "grab" then directGrab()
+    elseif ca == "slowtime" then toggleSlowTime()
+    elseif ca == "superjump" then toggleSuperJump()
+    elseif ca == "walkspeed" then toggleWalkSpeedLoop()
+    elseif ca == "microscopica" then
+        toggleMicroscopica()
+    elseif ca == "superfuerza" then
+        toggleSuperFuerza()
+    elseif ca == "regeneracion" then
+        toggleRegeneracion()
+    elseif ca == "xray" then
+        toggleXRay()
+    end
+end
+
+local function activateOption()
+    if not currentActiveOption then return end
+    local option = currentActiveOption
+    
+    if option == "esp" then
+        toggleESP()
+    elseif option == "antisit" then
+        toggleAntiSit()
+    elseif option == "npcspy" then
+        toggleNpcSpy()
+    elseif option == "camera" then
+        -- Sistema de cámara simplificado
+        if isCameraSystemActive then
+            isCameraSystemActive = false
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = humanoid
+            sendNotification("SUPER GIRL V2", "Sistema de Cámara DESACTIVADO", "rbxassetid://1381009")
+        else
+            isCameraSystemActive = true
+            camera.CameraType = Enum.CameraType.Scriptable
+            sendNotification("SUPER GIRL V2", "Sistema de Cámara ACTIVADO", "rbxassetid://1381009")
+        end
+    elseif option == "respawn" then
+        respawnCharacter()
+    elseif option == "deletescript" then
+        deleteScript()
+        return
+    end
+end
+
+-- ===== SPEED LABELS UPDATE =====
+updateSpeedLabels = function()
+    if speedLabels["flight"] then
+        local modeText = flightFastMode and "RÁPIDO" or "NORMAL"
+        speedLabels["flight"].Text = "🛸 " .. math.floor(flightSpeed) .. " (" .. modeText .. ")"
+    end
+    if speedLabels["superjump"] then
+        speedLabels["superjump"].Text = "⬆️ " .. superJumpPower .. (isSuperJumpActive and " (ON)" or " (OFF)")
+    end
+    if speedLabels["walkspeed"] then
+        speedLabels["walkspeed"].Text = "💨 " .. math.floor(walkSpeed) .. (isWalkSpeedActive and " (ON)" or " (OFF)")
+    end
+    if speedLabels["grab"] then
+        if isMultiTelekinesis then
+            speedLabels["grab"].Text = "🌀 " .. #heldParts .. "/" .. MAX_TELEKINESIS_OBJECTS
+        elseif isTelekinesisMode then
+            speedLabels["grab"].Text = "📡 " .. telekinesisDistance
+        else
+            speedLabels["grab"].Text = "✋ " .. GRAB_ANIMATIONS[currentGrabAnimIndex].name
+        end
+    end
+    if speedLabels["microscopica"] then
+        speedLabels["microscopica"].Text = "🔬 " .. (isMicroscopicaActive and "ON" or "OFF")
+    end
+    if speedLabels["superfuerza"] then
+        speedLabels["superfuerza"].Text = "💪 " .. superFuerzaMultiplier .. "x"
+    end
+    if speedLabels["slowtime"] then
+        speedLabels["slowtime"].Text = "⏱️ " .. (isSlowTimeActive and "ON" or "OFF")
+    end
+    if speedLabels["regeneracion"] then
+        speedLabels["regeneracion"].Text = "❤️ " .. (isRegeneracionActive and "ON" or "OFF")
+    end
+    if speedLabels["xray"] then
+        speedLabels["xray"].Text = "👁️ " .. (isXRayActive and "ON" or "OFF")
+    end
+end
+
+-- ===== MENU HORIZONTAL CON TEMA SUPERMAN =====
+local function createMenuGui()
+    if menuGui then menuGui:Destroy() end
+    menuGui = Instance.new("ScreenGui", CoreGui)
+    menuGui.Name = "SuperGirlMenu_V2"
+    menuButtons = {}
+    speedLabels = {}
+    
+    local screenSize = menuGui.AbsoluteSize
+    local centerY = screenSize.Y * 0.8 -- Parte inferior de la pantalla
+    
+    local currentList = isOptionsMenu and optionsList or menuAbilities
+    local totalItems = #currentList
+    local buttonWidth = 110
+    local buttonHeight = 110
+    local spacing = 10
+    local totalWidth = (buttonWidth * totalItems) + (spacing * (totalItems - 1))
+    local startX = (screenSize.X - totalWidth) / 2
+    
+    -- Fondo del menú - AZUL SUPERMAN
+    local background = Instance.new("Frame", menuGui)
+    background.Size = UDim2.new(0, totalWidth + 40, 0, buttonHeight + 40)
+    background.Position = UDim2.new(0.5, -(totalWidth + 40)/2, 0, centerY - 70)
+    background.BackgroundColor3 = Color3.fromRGB(0, 51, 160) -- AZUL SUPERMAN
+    background.BackgroundTransparency = 0.2
+    background.BorderSizePixel = 0
+    
+    local uiCorner = Instance.new("UICorner", background)
+    uiCorner.CornerRadius = UDim.new(0, 10)
+    
+    -- Borde rojo del fondo
+    local backgroundStroke = Instance.new("UIStroke", background)
+    backgroundStroke.Color = Color3.fromRGB(200, 0, 0) -- ROJO SUPERMAN
+    backgroundStroke.Thickness = 3
+    
+    for i, item in ipairs(currentList) do
+        local posX = startX + ((i - 1) * (buttonWidth + spacing))
+        
+        -- Crear el botón
+        local btn = Instance.new("TextButton", menuGui)
+        btn.Size = UDim2.new(0, buttonWidth, 0, buttonHeight)
+        btn.Position = UDim2.new(0, posX, 0, centerY - 60)
+        btn.Font = Enum.Font.GothamBold
+        btn.AutoButtonColor = false
+        btn.TextSize = 9
+        btn.TextColor3 = Color3.fromRGB(255, 255, 0) -- TEXTO AMARILLO
+        btn.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- FONDO ROJO
+        btn.BorderSizePixel = 0
+        
+        local uiCorner = Instance.new("UICorner", btn)
+        uiCorner.CornerRadius = UDim.new(0, 15)
+        
+        -- Borde amarillo para todos los botones
+        local btnStroke = Instance.new("UIStroke", btn)
+        btnStroke.Color = Color3.fromRGB(255, 255, 0) -- BORDE AMARILLO
+        btnStroke.Thickness = 2
+        
+        -- Contenedor de texto (sin imagen de fondo)
+        local textContainer = Instance.new("Frame", btn)
+        textContainer.Size = UDim2.new(1, 0, 1, 0)
+        textContainer.Position = UDim2.new(0, 0, 0, 0)
+        textContainer.BackgroundTransparency = 1
+        textContainer.ZIndex = 1
+        
+        local buttonText = Instance.new("TextLabel", textContainer)
+        buttonText.Size = UDim2.new(1, 0, 0.7, 0)
+        buttonText.Position = UDim2.new(0, 0, 0, 0)
+        buttonText.BackgroundTransparency = 1
+        buttonText.TextColor3 = Color3.fromRGB(255, 255, 0) -- AMARILLO
+        buttonText.Font = Enum.Font.GothamBold
+        buttonText.TextSize = 11
+        buttonText.Text = item.icon .. "\n" .. item.name
+        
+        local keyName = isOptionsMenu and "OPCIÓN" or getKeyName(keyBindings[item.ability or item.option])
+        local keyText = Instance.new("TextLabel", textContainer)
+        keyText.Size = UDim2.new(1, 0, 0.3, 0)
+        keyText.Position = UDim2.new(0, 0, 0.7, 0)
+        keyText.BackgroundTransparency = 1
+        keyText.TextColor3 = Color3.fromRGB(255, 255, 200) -- AMARILLO CLARO
+        keyText.Font = Enum.Font.Gotham
+        keyText.TextSize = 9
+        keyText.Text = "[" .. keyName .. "]"
+        
+        if not isOptionsMenu then
+            local speedLabel = Instance.new("TextLabel")
+            speedLabel.Name = "SpeedLabel"
+            speedLabel.Size = UDim2.new(1, 0, 0.3, 0)
+            speedLabel.Position = UDim2.new(0, 0, 0.7, 0)
+            speedLabel.BackgroundColor3 = Color3.fromRGB(0, 51, 160) -- AZUL SUPERMAN
+            speedLabel.BackgroundTransparency = 0.3
+            speedLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- AMARILLO
+            speedLabel.TextSize = 9
+            speedLabel.Font = Enum.Font.GothamBold
+            speedLabel.BorderSizePixel = 0
+            speedLabel.ZIndex = 2
+            speedLabel.Parent = btn
+            
+            -- Borde amarillo para el speedLabel
+            local speedStroke = Instance.new("UIStroke", speedLabel)
+            speedStroke.Color = Color3.fromRGB(255, 255, 0)
+            speedStroke.Thickness = 1
+            
+            -- Configurar el texto según la habilidad
+            if item.ability == "flight" then
+                local modeText = flightFastMode and "RÁPIDO" or "NORMAL"
+                speedLabel.Text = "🛸 " .. math.floor(flightSpeed) .. " (" .. modeText .. ")"
+                speedLabels["flight"] = speedLabel
+            elseif item.ability == "superjump" then
+                speedLabel.Text = "⬆️ " .. superJumpPower .. (isSuperJumpActive and " (ON)" or " (OFF)")
+                speedLabels["superjump"] = speedLabel
+            elseif item.ability == "walkspeed" then
+                speedLabel.Text = "💨 " .. math.floor(walkSpeed) .. (isWalkSpeedActive and " (ON)" or " (OFF)")
+                speedLabels["walkspeed"] = speedLabel
+            elseif item.ability == "grab" then
+                if isMultiTelekinesis then
+                    speedLabel.Text = "🌀 " .. #heldParts .. "/" .. MAX_TELEKINESIS_OBJECTS
+                elseif isTelekinesisMode then
+                    speedLabel.Text = "📡 " .. telekinesisDistance
+                else
+                    speedLabel.Text = "✋ " .. GRAB_ANIMATIONS[currentGrabAnimIndex].name
+                end
+                speedLabels["grab"] = speedLabel
+            elseif item.ability == "microscopica" then
+                speedLabel.Text = "🔬 " .. (isMicroscopicaActive and "ON" or "OFF")
+                speedLabels["microscopica"] = speedLabel
+            elseif item.ability == "superfuerza" then
+                speedLabel.Text = "💪 " .. superFuerzaMultiplier .. "x"
+                speedLabels["superfuerza"] = speedLabel
+            elseif item.ability == "slowtime" then
+                speedLabel.Text = "⏱️ " .. (isSlowTimeActive and "ON" or "OFF")
+                speedLabels["slowtime"] = speedLabel
+            elseif item.ability == "regeneracion" then
+                speedLabel.Text = "❤️ " .. (isRegeneracionActive and "ON" or "OFF")
+                speedLabels["regeneracion"] = speedLabel
+            elseif item.ability == "xray" then
+                speedLabel.Text = "👁️ " .. (isXRayActive and "ON" or "OFF")
+                speedLabels["xray"] = speedLabel
+            else
+                speedLabel.Visible = false
+            end
+        end
+        
+        btn.MouseButton1Click:Connect(function()
+            if assignmentMode then
+                assignmentMode = false
+                assignmentAbility = nil
+            else
+                if isOptionsMenu then
+                    currentActiveOption = item.option
+                    activateOption()
+                else
+                    currentActiveAbility = item.ability
+                    activatePower()
+                end
+            end
+            refreshMenuVisuals()
+        end)
+        
+        btn.MouseButton2Click:Connect(function()
+            if isOptionsMenu then return end
+            
+            local currentTime = tick()
+            local lastTime = lastRightClickTimes[item.ability] or 0
+            
+            if currentTime - lastTime < 0.5 then
+                keyBindings[item.ability] = nil
+                assignmentMode = false
+                assignmentAbility = nil
+                createMenuGui()
+                refreshMenuVisuals()
+            else
+                assignmentMode = true
+                assignmentAbility = item.ability
+                refreshMenuVisuals()
+            end
+            
+            lastRightClickTimes[item.ability] = currentTime
+        end)
+        
+        menuButtons[item.ability or item.option] = btn
+    end
+    
+    -- Título del menú - AMARILLO
+    local centerLabel = Instance.new("TextLabel", menuGui)
+    centerLabel.Size = UDim2.new(0, 300, 0, 30)
+    centerLabel.Position = UDim2.new(0.5, -150, 0, centerY - 100)
+    centerLabel.BackgroundTransparency = 1
+    centerLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- AMARILLO
+    centerLabel.Font = Enum.Font.GothamBold
+    centerLabel.TextSize = 14
+    centerLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0) -- Contorno negro para mejor visibilidad
+    centerLabel.TextStrokeTransparency = 0.5
+    
+    if isOptionsMenu then
+        centerLabel.Text = "OPCIONES - [SUPR] para cambiar a poderes | [ENTER] para activar"
+    else
+        centerLabel.Text = "PODERES SUPER GIRL V2 - [SUPR] para cambiar a opciones | [ENTER] para activar"
+    end
+    
+    -- Instrucciones de navegación - BLANCO
+    local navLabel = Instance.new("TextLabel", menuGui)
+    navLabel.Size = UDim2.new(0, 400, 0, 20)
+    navLabel.Position = UDim2.new(0.5, -200, 0, centerY + 60)
+    navLabel.BackgroundTransparency = 1
+    navLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- BLANCO
+    navLabel.Font = Enum.Font.Gotham
+    navLabel.TextSize = 12
+    navLabel.Text = "Navegación: [AvPág/RePág] - Activar: [ENTER] - Asignar tecla: [Click Derecho]"
+    
+    refreshMenuVisuals()
+end
+
+local function refreshMenuVisuals()
+    for abilityName, btn in pairs(menuButtons) do
+        -- Encontrar el stroke del botón
+        local btnStroke = btn:FindFirstChild("UIStroke")
+        
+        if assignmentMode and assignmentAbility == abilityName then
+            -- Modo asignación: NARANJA
+            btn.BackgroundColor3 = Color3.fromRGB(255, 170, 0) -- NARANJA
+            if btnStroke then
+                btnStroke.Color = Color3.fromRGB(255, 255, 0) -- Borde amarillo
+                btnStroke.Thickness = 3
+            end
+        elseif (not isOptionsMenu and currentActiveAbility == abilityName) or (isOptionsMenu and currentActiveOption == abilityName) then
+            -- Botón activo: AZUL CLARO
+            btn.BackgroundColor3 = Color3.fromRGB(0, 150, 255) -- AZUL CLARO (como el de Superman volando)
+            if btnStroke then
+                btnStroke.Color = Color3.fromRGB(255, 255, 0) -- Borde amarillo
+                btnStroke.Thickness = 3
+            end
+        else
+            -- Botón normal: ROJO
+            btn.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- ROJO
+            if btnStroke then
+                btnStroke.Color = Color3.fromRGB(255, 255, 0) -- Borde amarillo
+                btnStroke.Thickness = 2
+            end
+        end
+    end
+end
+
+local function navigateMenu(direction)
+    if not isMenuOpen then return end
+    
+    local currentList = isOptionsMenu and optionsList or menuAbilities
+    
+    if isOptionsMenu then
+        local currentIndex = 1
+        for i, item in ipairs(currentList) do
+            if item.option == currentActiveOption then
+                currentIndex = i
+                break
+            end
+        end
+        
+        local newIndex = currentIndex + direction
+        if newIndex > #currentList then newIndex = 1 end
+        if newIndex < 1 then newIndex = #currentList end
+        
+        currentActiveOption = currentList[newIndex].option
+    else
+        local currentIndex = 1
+        for i, item in ipairs(currentList) do
+            if item.ability == currentActiveAbility then
+                currentIndex = i
+                break
+            end
+        end
+        
+        local newIndex = currentIndex + direction
+        if newIndex > #currentList then newIndex = 1 end
+        if newIndex < 1 then newIndex = #currentList end
+        
+        currentActiveAbility = currentList[newIndex].ability
+    end
+    
+    refreshMenuVisuals()
+end
+
+-- ===== INPUT HANDLING =====
+connect(UserInputService.InputBegan, function(input, gp)
+    if input.UserInputType ~= Enum.UserInputType.Keyboard then 
+        return
+    end
+    
+    local key = input.KeyCode
+    
+    if gp then return end
+    
+    -- MODIFICACIÓN: NUEVO SISTEMA DE VELOCIDAD DE VUELO ESCALONADA (BASE 30)
+    if key == Enum.KeyCode.KeypadPlus or key == Enum.KeyCode.Equals then
+        if isFlying then
+            -- Lógica de aumento escalonado (base 30)
+            if flightSpeed < 100 then
+                -- Si es menor a 100, subir de 70 en 70 hasta llegar a 100
+                flightSpeed = math.min(100, flightSpeed + flightSpeedStepHigh)
+                if flightSpeed >= 100 then
+                    flightFastMode = true
+                    playFlightFastAnimation()
+                    sendNotification("VUELO RÁPIDO", "Velocidad aumentada a 100 (Modo RÁPIDO)", "rbxassetid://1381009")
+                else
+                    sendNotification("VUELO", "Velocidad aumentada a " .. flightSpeed, "rbxassetid://1381009")
+                end
+            elseif flightSpeed >= 100 and flightSpeed < FLIGHT_MAX_SPEED then
+                -- Si es 100 o más, subir de 10 en 10
+                flightSpeed = math.min(FLIGHT_MAX_SPEED, flightSpeed + flightSpeedStepLow)
+                sendNotification("VUELO RÁPIDO", "Velocidad aumentada a " .. flightSpeed, "rbxassetid://1381009")
+            else
+                -- Si ya está en el máximo
+                sendNotification("VUELO", "Velocidad máxima alcanzada (500)", "rbxassetid://1381009")
+            end
+            
+            updateSpeedLabels()
+            return
+        end
+        
+        if #heldParts > 0 and (isTelekinesisMode or isMultiTelekinesis) then
+            telekinesisDistance = math.min(telekinesisMaxDistance, telekinesisDistance + telekinesisDistanceStep)
+            updateSpeedLabels()
+            return
+        end
+        
+        if isSuperJumpActive then
+            superJumpPower = math.min(maxSuperJumpPower, superJumpPower + superJumpStep)
+            updateSpeedLabels()
+            return
+        end
+        
+        if isWalkSpeedActive then
+            adjustWalkSpeed(walkSpeedStep)
+            return
+        end
+        
+        if isSuperFuerzaActive then
+            adjustSuperFuerza(1)
+            updateSpeedLabels()
+            return
+        end
+        
+    elseif key == Enum.KeyCode.KeypadMinus or key == Enum.KeyCode.Minus then
+        if isFlying then
+            -- Lógica de disminución escalonada (base 30)
+            if flightSpeed > 100 then
+                -- Si es mayor a 100, bajar de 10 en 10
+                flightSpeed = math.max(100, flightSpeed - flightSpeedStepLow)
+                sendNotification("VUELO", "Velocidad disminuida a " .. flightSpeed, "rbxassetid://1381009")
+            elseif flightSpeed == 100 then
+                -- Si es exactamente 100, bajar a 30
+                flightSpeed = FLIGHT_NORMAL_SPEED
+                flightFastMode = false
+                stopFlightFastAnimation()
+                sendNotification("VUELO", "Velocidad disminuida a 30 (Modo NORMAL)", "rbxassetid://1381009")
+            else
+                -- Si es menor a 100, mantener en mínimo 30
+                flightSpeed = FLIGHT_NORMAL_SPEED
+                sendNotification("VUELO", "Velocidad mínima (30)", "rbxassetid://1381009")
+            end
+            
+            updateSpeedLabels()
+            return
+        end
+        
+        if #heldParts > 0 and (isTelekinesisMode or isMultiTelekinesis) then
+            telekinesisDistance = math.max(telekinesisMinDistance, telekinesisDistance - telekinesisDistanceStep)
+            updateSpeedLabels()
+            return
+        end
+        
+        if isSuperJumpActive then
+            superJumpPower = math.max(minSuperJumpPower, superJumpPower - superJumpStep)
+            updateSpeedLabels()
+            return
+        end
+        
+        if isWalkSpeedActive then
+            adjustWalkSpeed(-walkSpeedStep)
+            return
+        end
+        
+        if isSuperFuerzaActive then
+            adjustSuperFuerza(-1)
+            updateSpeedLabels()
+            return
+        end
+    end
+    
+    -- SUPR para cambiar entre poderes y opciones
+    if key == TOGGLE_OPTIONS_KEY and isMenuOpen then
+        isOptionsMenu = not isOptionsMenu
+        if isOptionsMenu then
+            currentActiveOption = optionsList[1].option
+        else
+            currentActiveAbility = menuAbilities[1].ability
+        end
+        createMenuGui()
+        return
+    end
+    
+    -- SISTEMA DE TECLAS PARA AGARRE/TELEKINESIS
+    if key == Enum.KeyCode.F1 then
+        if #heldParts > 0 then
+            toggleTelekinesisMode()
+        end
+        return
+    end
+    
+    -- F2 PARA LANZAR OBJETOS
+    if key == Enum.KeyCode.F2 then
+        if #heldParts > 0 then
+            if isMultiTelekinesis then
+                throwAllParts()
+            else
+                if #heldParts > 0 then
+                    throwPart(heldParts[1])
+                    table.remove(heldParts, 1)
+                    if #heldParts == 0 then
+                        stopGrabAnimation()
+                    end
+                end
+            end
+        end
+        return
+    end
+    
+    if key == Enum.KeyCode.F3 then
+        toggleMultiTelekinesis()
+        return
+    end
+    
+    if key == Enum.KeyCode.F4 then
+        if #heldParts > 0 and not isTelekinesisMode and not isMultiTelekinesis then
+            switchGrabAnimation()
+        end
+        return
+    end
+    
+    if assignmentMode and assignmentAbility then
+        keyBindings[assignmentAbility] = key
+        assignmentMode = false
+        assignmentAbility = nil
+        createMenuGui()
+        refreshMenuVisuals()
+        return
+    end
+    
+    if key == MENU_KEY then
+        isMenuOpen = not isMenuOpen
+        if isMenuOpen then
+            createMenuGui()
+        else
+            if menuGui then menuGui:Destroy() end
+        end
+        return
+    end
+    
+    if isMenuOpen then
+        if key == NAV_NEXT_KEY then 
+            navigateMenu(1)
+            return
+        elseif key == NAV_PREV_KEY then 
+            navigateMenu(-1)
+            return
+        elseif key == Enum.KeyCode.Return or key == Enum.KeyCode.KeypadEnter then
+            if isOptionsMenu then
+                activateOption()
+            else
+                activatePower()
+            end
+            return
+        end
+    end
+    
+    for ability, boundKey in pairs(keyBindings) do
+        if boundKey and boundKey == key then
+            currentActiveAbility = ability
+            activatePower()
+            return
+        end
+    end
+    
+    if not isFreeCamActive then
+        if key == Enum.KeyCode.W then moveState.forward = 1 end
+        if key == Enum.KeyCode.S then moveState.backward = 1 end
+        if key == Enum.KeyCode.A then moveState.left = 1 end
+        if key == Enum.KeyCode.D then moveState.right = 1 end
+        if key == Enum.KeyCode.Space then moveState.up = 1 end
+        if key == Enum.KeyCode.LeftControl then moveState.down = 1 end
+    end
+end)
+
+connect(UserInputService.InputEnded, function(input)
+    local key = input.KeyCode
+    
+    if not isFreeCamActive then
+        if key == Enum.KeyCode.W then moveState.forward = 0 end
+        if key == Enum.KeyCode.S then moveState.backward = 0 end
+        if key == Enum.KeyCode.A then moveState.left = 0 end
+        if key == Enum.KeyCode.D then moveState.right = 0 end
+        if key == Enum.KeyCode.Space then moveState.up = 0 end
+        if key == Enum.KeyCode.LeftControl then moveState.down = 0 end
+    end
+end)
+
+-- ===== SISTEMA DE MOVIMIENTO PARA AGARRE =====
+connect(RunService.Heartbeat, function(deltaTime)
+    if #heldParts > 0 then
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        
+        if not root then 
+            stopGrabbing()
+            return
+        end
+
+        for i, partData in pairs(heldParts) do
+            local part = partData.part
+            if not (part and part.Parent and not part.Anchored) then
+                table.remove(heldParts, i)
+                if #heldParts == 0 then
+                    stopGrabAnimation()
+                end
+                return
+            end
+
+            local partRoot = partData.root or part.AssemblyRootPart or part
+            local headTop = root.Position + Vector3.new(0, root.Size.Y/2 + 5, 0)
+            
+            if isTelekinesisMode then
+                local teleDir = camera.CFrame.LookVector
+                local telePos = root.Position + teleDir * telekinesisDistance
+                movePartVelocity(part, telePos)
+            else
+                movePartVelocity(part, headTop)
+            end
+
+            if (part.Position - partData.lastPosition).Magnitude > 100 then
+                table.remove(heldParts, i)
+                if #heldParts == 0 then
+                    stopGrabAnimation()
+                end
+                return
+            end
+            partData.lastPosition = part.Position
+        end
+    end
+end)
+
+-- ===== ANIMATIONS SCRIPT =====
+local ANIMATIONS = {
+    Idle = 133214699132642, 
+    Walk = 16738340646, 
+    Run = 82598234841035, 
+    Jump = 10921242013, 
+    Fall = 10921241244,
+    Climb = 16738332169, 
+    Swim = 16738339158,
+    SwimIdle = 16738339817
+}
+
+local function waitForCharacter()
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid", 10)
+    
+    if not humanoid then
+        return nil
+    end
+    
+    return character, humanoid
+end
+
+local function waitForAnimate(character, timeout)
+    timeout = timeout or 1
+    local startTime = tick()
+    
+    while tick() - startTime < timeout do
+        local animate = character:FindFirstChild("Animate")
+        if animate and animate:FindFirstChild("run") and animate:FindFirstChild("idle") then 
+            return animate
+        end
+        task.wait(0.1)
+    end
+    return nil
+end
+
+local function setAnimation(animationType, animationId, animate)
+    if not animate or not animationId then return false end
+    
+    local success = pcall(function()
+        local idStr = "rbxassetid://" .. tostring(animationId)
+
+        if animationType == "Idle" then
+            local anim1 = animate.idle:FindFirstChild("Animation1")
+            local anim2 = animate.idle:FindFirstChild("Animation2")
+            if anim1 then anim1.AnimationId = idStr end
+            if anim2 then anim2.AnimationId = idStr end
+            
+        elseif animationType == "Walk" then
+            local walkAnim = animate.walk:FindFirstChild("WalkAnim")
+            if walkAnim then walkAnim.AnimationId = idStr end
+            
+        elseif animationType == "Run" then
+            local runAnim = animate.run:FindFirstChild("RunAnim")
+            if runAnim then runAnim.AnimationId = idStr end
+            
+        elseif animationType == "Jump" then
+            local jumpAnim = animate.jump:FindFirstChild("JumpAnim")
+            if jumpAnim then jumpAnim.AnimationId = idStr end
+            
+        elseif animationType == "Fall" then
+            local fallAnim = animate.fall:FindFirstChild("FallAnim")
+            if fallAnim then fallAnim.AnimationId = idStr end
+            
+        elseif animationType == "Climb" then
+            local climbAnim = animate.climb:FindFirstChild("ClimbAnim")
+            if climbAnim then climbAnim.AnimationId = idStr end
+
+        elseif animationType == "Swim" and animate:FindFirstChild("swim") then
+            local swimAnim = animate.swim:FindFirstChild("Swim")
+            if swimAnim then swimAnim.AnimationId = idStr end
+
+        elseif animationType == "SwimIdle" and animate:FindFirstChild("swimidle") then
+            local swimIdleAnim = animate.swimidle:FindFirstChild("SwimIdle")
+            if swimIdleAnim then swimIdleAnim.AnimationId = idStr end
+            
+        end
+    end)
+    
+    return success
+end
+
+local function loadAnimations()
+    local character, humanoid = waitForCharacter()
+    if not character or not humanoid then return false end
+    
+    humanoid.WalkSpeed = 16
+    
+    local animate = waitForAnimate(character)
+    
+    if not animate then
+        return false
+    end
+    
+    stopAllAnimations(humanoid)
+    task.wait(0.1)
+    
+    local count = 0
+    local animTypes = {"Idle", "Walk", "Run", "Jump", "Fall", "Climb", "Swim", "SwimIdle"}
+    
+    for _, animType in ipairs(animTypes) do
+        if ANIMATIONS[animType] then
+            local success = setAnimation(animType, ANIMATIONS[animType], animate)
+            if success then
+                count = count + 1
+            end
+        end
+    end
+    
+    animate.Enabled = false
+    task.wait(0.1)
+    animate.Enabled = true
+    
+    local function refreshState()
+        humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+        task.wait(0.05)
+        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+    end
+    refreshState()
+    
+    return count > 0
+end
+
+-- Actualizar personaje al morir
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = newChar:WaitForChild("Humanoid")
+    hrp = newChar:WaitForChild("HumanoidRootPart")
+    humanoid.UseJumpPower = true
+    humanoid.JumpPower = superJumpPower
+    
+    Workspace.Gravity = originalGravity
+    
+    task.wait(0.5)
+    startLowWalkSpeedLoop()
+    
+    if isWalkSpeedActive then
+        task.wait(0.5)
+        startWalkSpeedLoop()
+    end
+    
+    if isSuperFuerzaActive then
+        task.wait(0.5)
+        toggleSuperFuerza()
+    end
+    
+    if isSlowTimeActive then
+        task.wait(0.5)
+        toggleSlowTime()
+    end
+    
+    if isRegeneracionActive then
+        task.wait(0.5)
+        toggleRegeneracion()
+    end
+    
+    if isXRayActive then
+        task.wait(0.5)
+        toggleXRay()
+    end
+    
+    if isCameraSystemActive then
+        task.wait(0.5)
+        isCameraSystemActive = false
+        camera.CameraType = Enum.CameraType.Custom
+        camera.CameraSubject = humanoid
+    end
+    
+    heldParts = {}
+    
+    task.wait(1)
+    loadAnimations()
+    
+    setupSwimmingDetection()
+end)
+
+-- ===== ANTI-AFK SYSTEM =====
+local function activateAntiAfk()
+    local VirtualInput = game:GetService("VirtualUser")
+    
+    game:GetService("Players").LocalPlayer.Idled:Connect(function()
+        VirtualInput:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualInput:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+    end)
+end
+
+activateAntiAfk()
+
+-- ===== INICIALIZACIÓN =====
+sendNotification("SUPER GIRL V2", "Script cargado exitosamente. Tecla FIN para abrir menú. SUPR para cambiar entre poderes/opciones.", "rbxassetid://1381009")
+task.wait(1)
+sendNotification("CONTROLES VUELO", "Velocidad base: 30. + para aumentar, - para disminuir. Auto-reset a 30 tras 0.5s detenido.", "rbxassetid://1381009")
+
+startLowWalkSpeedLoop()
+setupSwimmingDetection()
+task.wait(1)
+loadAnimations()
